@@ -27,7 +27,7 @@ if os.uname().sysname == 'Darwin':
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
     IRIS_data_loc = '/home/staff/daithil/work/Data/IRIS/'
-    output_loc = '/home/staff/daithil/work/python_output/IRIS_output/'
+    output_loc = 'C:/Users/molly/OneDrive - Dublin City University/PHA4/Final_Year_Project'
 
 
 # Plot the output of the fitting routine
@@ -858,7 +858,7 @@ def getdata(iris_event):
 if __name__ == "__main__":
     __spec__ = None
 
-    iris_evts = ['20230329_111458']
+    iris_evts = ['20230503_072923']
 
     for event in iris_evts:
         print('')
