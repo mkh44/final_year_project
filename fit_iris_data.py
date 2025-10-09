@@ -1,7 +1,10 @@
 # %% [markdown]
 # **Notebook to fit IRIS data using multiple cores**
 
+##!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # %%
+
 import glob
 import os
 from iris_fitting.fit_iris_lines import fit_raster
