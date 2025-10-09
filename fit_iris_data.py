@@ -21,6 +21,7 @@ from sunpy.net import Fido, attrs as a
 from astropy import units as u
 import tarfile
 from scipy.constants import speed_of_light
+import pdb
 
 if os.uname().sysname == 'Darwin':
     IRIS_data_loc = '/Users/dml/Data/IRIS/'
@@ -335,12 +336,13 @@ def plot_mgii_sns_fits(dv_k3_map,dv_h3_map,k2_sep_map,h2_sep_map,iris_window,eve
     plt.close(fig)
 
 # Plot the output of the Mg II fitting routine
-def plot_mgii_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii_k_asym,mgii_h_asym,mg_integ_int,aspect_ratio,iris_window,event,smooth=False):
+def plot_mgii_quartiles(mgii_k_integ_int,mgii_h_integ_int,mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,
+                        mgii_k_asym,mgii_h_asym,mg_integ_int,aspect_ratio,iris_window,event,smooth=False):
 
-    fig = plt.figure(constrained_layout=True, figsize=(7, 9))
+    fig = plt.figure(constrained_layout=True, figsize=(9, 9))
     plt.rcParams['font.size'] = '10'
 
-    gs = GridSpec(nrows=2, ncols=4, hspace=0.1, wspace=0.01)
+    gs = GridSpec(nrows=3, ncols=3, hspace=0.1, wspace=0.01)
     gs.update(left=0.05, right=0.95, bottom=0.04, top=0.96)
 
     plot_time = dt.datetime.strftime(dt.datetime.strptime(mgii_k_vdopp.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y/%m/%dT%H:%M:%S')
@@ -352,37 +354,38 @@ def plot_mgii_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii
     min_rat = 0.7
     max_rat = 1.7
 
-# k doppler map
-    ax00 = fig.add_subplot(gs[0,0], projection=mgii_k_vdopp, label='a)')
-    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
-    mgii_k_vdopp.plot_settings['norm'] = norm
-    mgii_k_vdopp.plot(axes=ax00, cmap = mpl.colormaps['seismic'], title='', aspect=aspect_ratio)
+# k integrated intensity map
+    ax00 = fig.add_subplot(gs[0,0], projection=mgii_k_integ_int, label='a)')
+    alpha = 1
+    upr_bnd = np.nanpercentile(mgii_k_integ_int.data, 100-alpha)
+
+    norm = colors.Normalize(vmin = 0, vmax = upr_bnd)
+    mgii_k_integ_int.plot_settings['norm'] = norm
+    mgii_k_integ_int.plot(axes=ax00, cmap = mpl.colormaps['Reds_r'], title='', aspect=aspect_ratio)
     ax00.set_ylabel("Solar Y (arcsec)")
     ax00.set_xlabel(" ")
     x = ax00.coords[0]
     x.set_ticklabel_visible(False)
 
-    plt.colorbar(location='top', label=r'a) Mg II k V$_{dopp}$ (km/s)', shrink=0.6, ax = ax00)
+    plt.colorbar(location='top', label=r'a) Mg II k Intensity', shrink=0.6, ax = ax00)
 
-# k line width map
-    ax01 = fig.add_subplot(gs[0,1], projection=mgii_k_width, label='b)')
-    norm = colors.Normalize(vmin = 0, vmax = max_wid)
-    mgii_k_width.plot_settings['norm'] = norm
-    mgii_k_width.plot(axes=ax01, cmap = mpl.colormaps['cubehelix'], title='', aspect=aspect_ratio)
-    ax01.set_xlabel(" ")
+# k doppler map
+    ax01 = fig.add_subplot(gs[0,1], projection=mgii_k_vdopp, label='b)')
+    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
+    mgii_k_vdopp.plot_settings['norm'] = norm
+    mgii_k_vdopp.plot(axes=ax01, cmap = mpl.colormaps['seismic'], title='', aspect=aspect_ratio)
     ax01.set_ylabel(" ")
+    ax01.set_xlabel(" ")
     x = ax01.coords[0]
     x.set_ticklabel_visible(False)
-    y = ax01.coords[1]
-    y.set_ticklabel_visible(False)
-    
-    plt.colorbar(location='top', label=r'b) Mg II k line width ($\AA$)', shrink=0.6, ax = ax01)
 
-# k asym map
-    ax02 = fig.add_subplot(gs[0,2], projection=mgii_k_asym, label='c)')
-    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
-    mgii_k_asym.plot_settings['norm'] = norm
-    mgii_k_asym.plot(axes=ax02, cmap = mpl.colormaps['bwr'], title='', aspect=aspect_ratio)
+    plt.colorbar(location='top', label=r'b) Mg II k V$_{dopp}$ (km/s)', shrink=0.6, ax = ax01)
+
+# k line width map
+    ax02 = fig.add_subplot(gs[0,2], projection=mgii_k_width, label='c)')
+    norm = colors.Normalize(vmin = 0, vmax = max_wid)
+    mgii_k_width.plot_settings['norm'] = norm
+    mgii_k_width.plot(axes=ax02, cmap = mpl.colormaps['cubehelix'], title='', aspect=aspect_ratio)
     ax02.set_xlabel(" ")
     ax02.set_ylabel(" ")
     x = ax02.coords[0]
@@ -390,54 +393,86 @@ def plot_mgii_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii
     y = ax02.coords[1]
     y.set_ticklabel_visible(False)
     
-    plt.colorbar(location='top', label=r'c) Mg II k asymmetry', shrink=0.6, ax = ax02)
+    plt.colorbar(location='top', label=r'c) Mg II k line width ($\AA$)', shrink=0.6, ax = ax02)
 
-# Integrated intensity map
-    ax03 = fig.add_subplot(gs[0,3], projection=mg_integ_int, label='d)')
-    norm = colors.Normalize(vmin = min_rat, vmax = max_rat)
-    mg_integ_int.plot_settings['norm'] = norm
-    mg_integ_int.plot(axes=ax03, cmap = mpl.colormaps['cubehelix_r'], title='', aspect=aspect_ratio)
-    ax03.set_xlabel("Solar X (arcsec)")
-    ax03.set_ylabel(" ")
-    y = ax03.coords[1]
-    y.set_ticklabel_visible(False)
-
-    plt.colorbar(location='top', label=r'd) k/h ratio', shrink=0.6, ax = ax03)
-
-# h doppler map
-    ax10 = fig.add_subplot(gs[1,0], projection=mgii_h_vdopp, label='e)')
-    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
-    mgii_h_vdopp.plot_settings['norm'] = norm
-    mgii_h_vdopp.plot(axes=ax10, cmap = mpl.colormaps['seismic'], title='', aspect=aspect_ratio)
+# k asym map
+    ax10 = fig.add_subplot(gs[1,0], projection=mgii_k_asym, label='d)')
+    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
+    mgii_k_asym.plot_settings['norm'] = norm
+    mgii_k_asym.plot(axes=ax10, cmap = mpl.colormaps['bwr'], title='', aspect=aspect_ratio)
+    ax10.set_xlabel(" ")
     ax10.set_ylabel("Solar Y (arcsec)")
-    ax10.set_xlabel("Solar X (arcsec)")
+    x = ax10.coords[0]
+    x.set_ticklabel_visible(False)
+    
+    plt.colorbar(location='top', label=r'd) Mg II k asymmetry', shrink=0.6, ax = ax10)
 
-    plt.colorbar(location='top', label=r'e) Mg II h V$_{dopp}$ (km/s)', shrink=0.6, ax = ax10)
+# h integrated intensity map
+    ax11 = fig.add_subplot(gs[1,1], projection=mgii_h_integ_int, label='e)')
+    alpha = 1
+    upr_bnd = np.nanpercentile(mgii_h_integ_int.data, 100-alpha)
 
-# h line width map
-    ax11 = fig.add_subplot(gs[1,1], projection=mgii_h_width, label='f)')
-    norm = colors.Normalize(vmin = 0, vmax = max_wid)
-    mgii_h_width.plot_settings['norm'] = norm
-    mgii_h_width.plot(axes=ax11, cmap = mpl.colormaps['cubehelix'], title='', aspect=aspect_ratio)
-    ax11.set_xlabel("Solar X (arcsec)")
+    norm = colors.Normalize(vmin = 0, vmax = upr_bnd)
+    mgii_h_integ_int.plot_settings['norm'] = norm
+    mgii_h_integ_int.plot(axes=ax11, cmap = mpl.colormaps['Reds_r'], title='', aspect=aspect_ratio)
     ax11.set_ylabel(" ")
+    ax11.set_xlabel(" ")
+    x = ax11.coords[0]
+    x.set_ticklabel_visible(False)
     y = ax11.coords[1]
     y.set_ticklabel_visible(False)
-    
-    plt.colorbar(location='top', label=r'f) Mg II h line width ($\AA$)', shrink=0.6, ax = ax11)
 
-# h asym map
-    ax12 = fig.add_subplot(gs[1,2], projection=mgii_h_asym, label='g)')
-    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
-    mgii_h_asym.plot_settings['norm'] = norm
-    mgii_h_asym.plot(axes=ax12, cmap = mpl.colormaps['bwr'], title='', aspect=aspect_ratio)
-    ax12.set_xlabel("Solar X (arcsec)")
+    plt.colorbar(location='top', label=r'e) Mg II h Intensity', shrink=0.6, ax = ax11)
+
+# h doppler map
+    ax12 = fig.add_subplot(gs[1,2], projection=mgii_h_vdopp, label='f)')
+    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
+    mgii_h_vdopp.plot_settings['norm'] = norm
+    mgii_h_vdopp.plot(axes=ax12, cmap = mpl.colormaps['seismic'], title='', aspect=aspect_ratio)
     ax12.set_ylabel(" ")
+    ax12.set_xlabel(" ")
+    x = ax12.coords[0]
+    x.set_ticklabel_visible(False)
     y = ax12.coords[1]
     y.set_ticklabel_visible(False)
+
+    plt.colorbar(location='top', label=r'f) Mg II h V$_{dopp}$ (km/s)', shrink=0.6, ax = ax12)
+
+# h line width map
+    ax20 = fig.add_subplot(gs[2,0], projection=mgii_h_width, label='g)')
+    norm = colors.Normalize(vmin = 0, vmax = max_wid)
+    mgii_h_width.plot_settings['norm'] = norm
+    mgii_h_width.plot(axes=ax20, cmap = mpl.colormaps['cubehelix'], title='', aspect=aspect_ratio)
+    ax20.set_xlabel("Solar X (arcsec)")
+    ax20.set_ylabel("Solar y (arcsec)")
     
-    plt.colorbar(location='top', label=r'g) Mg II h asymmetry', shrink=0.6, ax = ax12)
-        
+    plt.colorbar(location='top', label=r'g) Mg II h line width ($\AA$)', shrink=0.6, ax = ax20)
+
+# h asym map
+    ax21 = fig.add_subplot(gs[2,1], projection=mgii_h_asym, label='h)')
+    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
+    mgii_h_asym.plot_settings['norm'] = norm
+    mgii_h_asym.plot(axes=ax21, cmap = mpl.colormaps['bwr'], title='', aspect=aspect_ratio)
+    ax21.set_xlabel("Solar X (arcsec)")
+    ax21.set_ylabel(" ")
+    y = ax21.coords[1]
+    y.set_ticklabel_visible(False)
+    
+    plt.colorbar(location='top', label=r'h) Mg II h asymmetry', shrink=0.6, ax = ax21)
+
+# Intensity ratio map
+    ax22 = fig.add_subplot(gs[2,2], projection=mg_integ_int, label='i)')
+    norm = colors.Normalize(vmin = min_rat, vmax = max_rat)
+    mg_integ_int.plot_settings['norm'] = norm
+    mg_integ_int.plot(axes=ax22, cmap = mpl.colormaps['cubehelix_r'], title='', aspect=aspect_ratio)
+    ax22.set_xlabel("Solar X (arcsec)")
+    ax22.set_ylabel(" ")
+    y = ax22.coords[1]
+    y.set_ticklabel_visible(False)
+
+    plt.colorbar(location='top', label=r'i) k/h ratio', shrink=0.6, ax = ax22)
+
+
     plt.suptitle(iris_window+'; '+plot_time)
 
     if smooth:
@@ -449,13 +484,14 @@ def plot_mgii_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii
     plt.close(fig)
 
 # Plot the output of the Mg II fitting routine
-def plot_mgii_sns_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii_k_asym,mgii_h_asym,mg_integ_int,iris_window,event,main_header,smooth=False):
+def plot_mgii_sns_quartiles(mgii_k_integ_int,mgii_h_integ_int,mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,
+                            mgii_k_asym,mgii_h_asym,mg_integ_int,iris_window,event,main_header,smooth=False):
 
-    fig = plt.figure(constrained_layout=True, figsize=(15, 10))
+    fig = plt.figure(constrained_layout=True, figsize=(18, 12))
     plt.rcParams['font.size'] = '10'
 
-    gs = GridSpec(nrows=4, ncols=2, hspace=0.12, wspace=0.05)
-    gs.update(left=0.05, right=0.95, bottom=0.04, top=0.9)
+    gs = GridSpec(nrows=3, ncols=3, hspace=0.1, wspace=0.05)
+    gs.update(left=0.05, right=0.95, bottom=0.04, top=0.95)
 
     plot_time = dt.datetime.strftime(dt.datetime.strptime(mgii_k_vdopp.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y/%m/%dT%H:%M:%S')
     file_time = dt.datetime.strftime(dt.datetime.strptime(mgii_k_vdopp.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y%m%d_%H%M%S')
@@ -471,82 +507,113 @@ def plot_mgii_sns_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,
     min_rat = 0.7
     max_rat = 1.7
 
-# k doppler map
+# k integrated intensity map
     ax00 = fig.add_subplot(gs[0,0], label='a)')
-    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
-    plt.imshow(mgii_k_vdopp.data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax00, 
+    alpha = 1
+    upr_bnd = np.nanpercentile(mgii_k_integ_int.data, 100-alpha)
+
+    norm = colors.Normalize(vmin = 0, vmax = upr_bnd)
+    plt.imshow(mgii_k_integ_int.data, norm=norm, cmap = mpl.colormaps['Reds_r'], axes=ax00, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax00.set_ylabel("Solar Y (arcsec)")
     ax00.set_xlabel(" ")
-    ax00.set_title('Mg II k')
     ax00.set_xticklabels([])
 
-    plt.colorbar(location='right', label=r' ', shrink=0.6, ax = ax00)
+    plt.colorbar(location='top', label=r'Mg II k Intensity', shrink=0.9, ax = ax00)
 
-# k line width map
-    ax01 = fig.add_subplot(gs[1,0], label='c)')
-    norm = colors.Normalize(vmin = 0, vmax = max_wid)
-    plt.imshow(mgii_k_width.data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax01, 
+# k doppler map
+    ax01 = fig.add_subplot(gs[0,1], label='b)')
+    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
+    plt.imshow(mgii_k_vdopp.data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax01, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax01.set_ylabel("Solar Y (arcsec)")
+    ax01.set_ylabel(" ")
     ax01.set_xlabel(" ")
     ax01.set_xticklabels([])
+    ax01.set_yticklabels([])
 
-    plt.colorbar(location='right', label=r' ', shrink=0.6, ax = ax01)
+    plt.colorbar(location='top', label=r'Mg II k v$_{dopp}$ (km/s)', shrink=0.9, ax = ax01)
 
-# k asymmetry map
-    ax02 = fig.add_subplot(gs[2,0], label='e)')
-    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
-    plt.imshow(mgii_k_asym.data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax02, 
+# k line width map
+    ax02 = fig.add_subplot(gs[0,2], label='c)')
+    norm = colors.Normalize(vmin = 0, vmax = max_wid)
+    plt.imshow(mgii_k_width.data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax02, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax02.set_ylabel("Solar Y (arcsec)")
+    ax02.set_ylabel(" ")
     ax02.set_xlabel(" ")
     ax02.set_xticklabels([])
+    ax02.set_yticklabels([])
 
-    plt.colorbar(location='right', label=r' ', shrink=0.6, ax = ax02)
+    plt.colorbar(location='top', label=r'Mg II k Line width ($\AA$)', shrink=0.9, ax = ax02)
 
-# Integrated intensity map
-    ax03 = fig.add_subplot(gs[3,0], label='g)')
-    norm = colors.Normalize(vmin = min_rat, vmax = max_rat)
-    plt.imshow(mg_integ_int.data, norm=norm, cmap = mpl.colormaps['cubehelix_r'], axes=ax03, 
+# k asymmetry map
+    ax10 = fig.add_subplot(gs[1,0], label='d)')
+    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
+    plt.imshow(mgii_k_asym.data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax10, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax03.set_xlabel("Time from raster start (s)")
-    ax03.set_ylabel("Solar Y (arcsec)")
-
-    plt.colorbar(location='right', label=r'k/h ratio', shrink=0.6, ax = ax03)
-
-# h doppler map
-    ax10 = fig.add_subplot(gs[0,1], label='b)')
-    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
-    plt.imshow(mgii_h_vdopp.data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax10, 
-               extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax10.set_ylabel(" ")
+    ax10.set_ylabel("Solar Y (arcsec)")
     ax10.set_xlabel(" ")
-    ax10.set_title('Mg II h')
     ax10.set_xticklabels([])
 
-    plt.colorbar(location='right', label=r'V$_{dopp}$ (km/s)', shrink=0.6, ax = ax10)
+    plt.colorbar(location='top', label=r'Mg II k Asymmetry', shrink=0.9, ax = ax10)
 
-# h line width map
-    ax11 = fig.add_subplot(gs[1,1], label='d)')
-    norm = colors.Normalize(vmin = 0, vmax = max_wid)
-    plt.imshow(mgii_h_width.data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax11, 
+# h integrated intensity map
+    ax11 = fig.add_subplot(gs[1,1], label='e)')
+    alpha = 1
+    upr_bnd = np.nanpercentile(mgii_h_integ_int.data, 100-alpha)
+
+    norm = colors.Normalize(vmin = 0, vmax = upr_bnd)
+    plt.imshow(mgii_h_integ_int.data, norm=norm, cmap = mpl.colormaps['Reds_r'], axes=ax11, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax11.set_ylabel(" ")
     ax11.set_xlabel(" ")
     ax11.set_xticklabels([])
+    ax11.set_yticklabels([])
 
-    plt.colorbar(location='right', label=r'Line width ($\AA$)', shrink=0.6, ax = ax11)
+    plt.colorbar(location='top', label=r'Mg II h Intensity', shrink=0.9, ax = ax11)
 
-# h asymmetry map
-    ax12 = fig.add_subplot(gs[2,1], label='f)')
-    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
-    plt.imshow(mgii_h_asym.data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax12, 
+# h doppler map
+    ax12 = fig.add_subplot(gs[1,2], label='f)')
+    norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
+    plt.imshow(mgii_h_vdopp.data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax12, 
                extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax12.set_ylabel(" ")
-    ax12.set_xlabel("Time from raster start (s)")
+    ax12.set_xlabel(" ")
+    ax12.set_xticklabels([])
+    ax12.set_yticklabels([])
 
-    plt.colorbar(location='right', label=r'Asymmetry', shrink=0.6, ax = ax12)
+    plt.colorbar(location='top', label=r'Mg II h v$_{dopp}$ (km/s)', shrink=0.9, ax = ax12)
+
+# h line width map
+    ax20 = fig.add_subplot(gs[2,0], label='g)')
+    norm = colors.Normalize(vmin = 0, vmax = max_wid)
+    plt.imshow(mgii_h_width.data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax20, 
+               extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
+    ax20.set_ylabel("Solar Y (arcsec)")
+    ax20.set_xlabel("Time from raster start (s)")
+
+    plt.colorbar(location='top', label=r'Mg II h Line width ($\AA$)', shrink=0.9, ax = ax20)
+
+# h asymmetry map
+    ax21 = fig.add_subplot(gs[2,1], label='h)')
+    norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
+    plt.imshow(mgii_h_asym.data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax21, 
+               extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
+    ax21.set_ylabel(" ")
+    ax21.set_xlabel("Time from raster start (s)")
+    ax21.set_yticklabels([])
+
+    plt.colorbar(location='top', label=r'Mg II h Asymmetry', shrink=0.9, ax = ax21)
+
+# Intensity ratio map
+    ax22 = fig.add_subplot(gs[2,2], label='i)')
+    norm = colors.Normalize(vmin = min_rat, vmax = max_rat)
+    plt.imshow(mg_integ_int.data, norm=norm, cmap = mpl.colormaps['cubehelix_r'], axes=ax22, 
+               extent=[t_array.min(), t_array.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
+    ax22.set_xlabel("Time from raster start (s)")
+    ax22.set_ylabel(" ")
+    ax22.set_yticklabels([])
+
+    plt.colorbar(location='top', label=r'Mg II k/h ratio', shrink=0.9, ax = ax22)
 
     plt.suptitle('Raster start time = '+plot_time)
 
@@ -668,7 +735,11 @@ def fit_iris_mgii(file, iris_window, event, plot_time, do_fit=False, smooth=Fals
         x_size = quartiles_k.shape[1]
         line_pos = quartiles_k[:,:,int_50]
 
-        integ_int_k = quartiles_k[:,:,6]  # Integral of the profile
+        integ_int = quartiles_k[:,:,6]
+        if header['CDELT3'] == 0:
+            mgii_k_integ_int = a.mk_iris_map(integ_int.T, header, main_header)
+        else:
+            mgii_k_integ_int = a.mk_iris_map(integ_int, header, main_header)
 
         # Doppler velocity
         # We're going to take the average median of the datacube as the rest wavelength in the region of interest
@@ -702,7 +773,11 @@ def fit_iris_mgii(file, iris_window, event, plot_time, do_fit=False, smooth=Fals
         x_size = quartiles_h.shape[1]
         line_pos = quartiles_h[:,:,int_50]
 
-        integ_int_h = quartiles_h[:,:,6]  # Integral of the profile
+        integ_int = quartiles_h[:,:,6]
+        if header['CDELT3'] == 0:
+            mgii_h_integ_int = a.mk_iris_map(integ_int.T, header, main_header)
+        else:
+            mgii_h_integ_int = a.mk_iris_map(integ_int, header, main_header)
 
         # Doppler velocity
         # We're going to take the average median of the datacube as the rest wavelength in the region of interest
@@ -722,24 +797,22 @@ def fit_iris_mgii(file, iris_window, event, plot_time, do_fit=False, smooth=Fals
             mgii_h_width = a.mk_iris_map(line_width, header, main_header)
 
         # Asymmetry
-        asym = (((quartiles_h[:,:,int_75]-quartiles_h[:,:,int_50]) - (quartiles_h[:,:,int_50]-quartiles_h[:,:,int_25])) / (quartiles_h[:,:,int_75]-quartiles_h[:,:,int_25]))
+        asym = (((quartiles_h[:,:,int_75]-quartiles_h[:,:,int_50]) - 
+                 (quartiles_h[:,:,int_50]-quartiles_h[:,:,int_25]))/(quartiles_h[:,:,int_75]-quartiles_h[:,:,int_25]))
         if header['CDELT3'] == 0:
             mgii_h_asym = a.mk_iris_map(asym.T, header, main_header)
         else:
             mgii_h_asym = a.mk_iris_map(asym, header, main_header)
 
         # Integrated intensity
-        int_ratio = integ_int_k/integ_int_h
-        if header['CDELT3'] == 0:
-            mg_integ_int = a.mk_iris_map(int_ratio.T, header, main_header)
-        else:
-            mg_integ_int = a.mk_iris_map(int_ratio, header, main_header)
-
+        int_ratio = np.divide(mgii_k_integ_int.data, mgii_h_integ_int.data)
+        mg_int_rat = a.mk_iris_map(int_ratio, header, main_header)
 
 # Save the output
         tree = {'dv_k3_map':dv_k3_map, 'dv_h3_map':dv_h3_map, 'k2_sep_map':k2_sep_map, 'h2_sep_map':h2_sep_map, 
-                'mgii_k_vdopp':mgii_k_vdopp, 'mgii_h_vdopp':mgii_h_vdopp, 'mgii_k_width':mgii_k_width, 
-                'mgii_h_width':mgii_h_width, 'mgii_k_asym':mgii_k_asym, 'mgii_h_asym':mgii_h_asym, 'mg_integ_int':mg_integ_int}
+                'mgii_k_integ_int':mgii_k_integ_int, 'mgii_h_integ_int':mgii_h_integ_int, 'mgii_k_vdopp':mgii_k_vdopp, 
+                'mgii_h_vdopp':mgii_h_vdopp, 'mgii_k_width':mgii_k_width, 'mgii_h_width':mgii_h_width, 
+                'mgii_k_asym':mgii_k_asym, 'mgii_h_asym':mgii_h_asym, 'mg_int_rat':mg_int_rat}
         with asdf.AsdfFile(tree) as asdf_file:  
             asdf_file.write_to(filename, all_array_compression='zlib')
     
@@ -750,26 +823,30 @@ def fit_iris_mgii(file, iris_window, event, plot_time, do_fit=False, smooth=Fals
             dv_h3_map = af.tree['dv_h3_map']
             k2_sep_map = af.tree['k2_sep_map']
             h2_sep_map = af.tree['h2_sep_map']
+            mgii_k_integ_int = af.tree['mgii_k_integ_int']
+            mgii_h_integ_int = af.tree['mgii_h_integ_int']
             mgii_k_vdopp = af.tree['mgii_k_vdopp']
             mgii_h_vdopp = af.tree['mgii_h_vdopp']
             mgii_k_width = af.tree['mgii_k_width']
             mgii_h_width = af.tree['mgii_h_width']
             mgii_k_asym = af.tree['mgii_k_asym']
             mgii_h_asym = af.tree['mgii_h_asym']
-            mg_integ_int = af.tree['mg_integ_int']
+            mg_int_rat = af.tree['mg_int_rat']
 
 # Plot the outputs
     if dv_k3_map.meta['cdelt1'] == 1e-9:
         sp = fits.open(file)
         main_header = sp[0].header
         plot_mgii_sns_fits(dv_k3_map,dv_h3_map,k2_sep_map,h2_sep_map,iris_window,event,main_header)
-        plot_mgii_sns_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii_k_asym,mgii_h_asym,mg_integ_int,
-                                iris_window,event,main_header,smooth=smooth)
+        plot_mgii_sns_quartiles(mgii_k_integ_int,mgii_h_integ_int,mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,
+                                mgii_h_width,mgii_k_asym,mgii_h_asym,mg_int_rat,iris_window,event,main_header,
+                                smooth=smooth)
     else:
         aspect_ratio = np.abs(dv_k3_map.meta['cdelt2']) / np.abs(dv_k3_map.meta['cdelt1'])
         plot_mgii_fits(dv_k3_map,dv_h3_map,k2_sep_map,h2_sep_map,aspect_ratio,iris_window,event)
-        plot_mgii_quartiles(mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,mgii_h_width,mgii_k_asym,mgii_h_asym,mg_integ_int,
-                            aspect_ratio,iris_window,event,smooth=smooth)
+        plot_mgii_quartiles(mgii_k_integ_int,mgii_h_integ_int,mgii_k_vdopp,mgii_h_vdopp,mgii_k_width,
+                            mgii_h_width,mgii_k_asym,mgii_h_asym,mg_int_rat,aspect_ratio,iris_window,event,
+                            smooth=smooth)
 
     return 
 
@@ -791,7 +868,7 @@ def fitdata(event):
         
         # Define the windows to be processed. Can process both Si IV lines and both C II lines. 
         # Note that C II lines need to be called as: C II 1334 1336 & C II 1335 1336
-        iris_window_list = ['C II 1334 1336', 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
+        iris_window_list = ['C II 1334 1336']#, 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
 
         for iris_window in iris_window_list:
 
@@ -818,7 +895,7 @@ def fitdata(event):
                 if files == False:
                     print('Fitting '+save_window)
                     fit_iris(indiv_file, iris_window, event, do_fit=True)
-            except UnboundLocalError:
+            except (UnboundLocalError, IndexError):
                 print('Wavelength window not available')
 
 #        # Mg II
@@ -858,7 +935,7 @@ def getdata(iris_event):
 if __name__ == "__main__":
     __spec__ = None
 
-    iris_evts = ['20230329_111458']
+    iris_evts = ['20160520_131758']
 
     for event in iris_evts:
         print('')
