@@ -23,8 +23,8 @@ import tarfile
 from scipy.constants import speed_of_light
 
 if os.uname().sysname == 'Darwin':
-    IRIS_data_loc = '/Users/dml/Data/IRIS/'
-    output_loc = '/Users/dml/python_output/IRIS_output/'
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20230503_072923_4204700135_raster.tar.gz'
+    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
     IRIS_data_loc = '/home/staff/daithil/work/Data/IRIS/'
     output_loc = '/home/staff/daithil/work/python_output/IRIS_output/'
