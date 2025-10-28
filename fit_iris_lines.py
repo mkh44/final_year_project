@@ -257,7 +257,7 @@ class fit_raster:
 
         # Create a delayed task for each (y, x) spectrum
         with Pool(processes=ncores) as pool:
-            results = list(tqdm(pool.imap(self.fit_spectrum, tasks), total=len(tasks), desc="Fitting IRIS spectra"))
+            results = list(pool.imap(self.fit_spectrum, tasks), total=len(tasks), desc="Fitting IRIS spectra")
 
         # Reshape the results back into the (y, x, 8) shape (numpy style)
         res = np.array([result for result in results], dtype='object').reshape(y_size, x_size, 8)
