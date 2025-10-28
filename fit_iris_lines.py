@@ -10,7 +10,7 @@ import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 from multiprocessing import Pool
-from tqdm import tqdm
+#from tqdm import tqdm
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.constants import speed_of_light
@@ -275,7 +275,7 @@ class fit_raster:
 
         # Create a delayed task for each (y, x) spectrum (numpy style)
         with Pool(processes=ncores) as pool:
-            results = list(tqdm(pool.imap(self.get_bluewing_asym, tasks), total=len(tasks), desc="Calculating blue-wing asymmetries"))
+            results = list(pool.imap(self.get_bluewing_asym, tasks), total=len(tasks), desc="Calculating blue-wing asymmetries")
 
         # Reshape the results back into the (y, x) shape
         res = np.array([result for result in results], dtype='object').reshape(y_size, x_size)
