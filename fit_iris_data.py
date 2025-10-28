@@ -4,6 +4,7 @@
 # %%
 import glob
 import os
+import matplotlib as mpl
 from iris_fitting.fit_iris_lines import fit_raster
 from iris_fitting import iris_get_mg_features_lv2 as get_mg
 from iris_fitting import get_mgii_quartiles
@@ -935,7 +936,7 @@ def getdata(iris_event):
 if __name__ == "__main__":
     __spec__ = None
 
-    iris_evts = ['20160520_131758']
+    iris_evts = ['20230503_072923']
 
     for event in iris_evts:
         print('')
