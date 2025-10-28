@@ -1,4 +1,5 @@
-# %% [markdown]
+###!/usr/bin/env python3
+#%% [markdown]
 # **Notebook to fit IRIS data using multiple cores**
 
 # %%
