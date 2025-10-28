@@ -31,7 +31,7 @@ if os.uname().sysname == 'Darwin':
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
     IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.tar.gz'
-    output_loc = 'C:/Users/molly/OneDrive - Dublin City University/PHA4/Finalar_Project'
+    output_loc = 'C:/Users/molly/OneDrive - Dublin City University/PHA4/Final_Year_Project'
 
 
 # Plot the output of the fitting routine
