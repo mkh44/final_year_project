@@ -4,11 +4,12 @@
 # **Notebook to fit IRIS data using multiple cores**
 
 # %%
+
 import glob
 import os
-
-import tarfile
-import pdb
+from iris_fitting.fit_iris_lines import fit_raster
+from iris_fitting import iris_get_mg_features_lv2 as get_mg
+from iris_fitting import get_mgii_quartiles
 import asdf
 from astropy.io import fits
 import datetime as dt
@@ -21,13 +22,9 @@ import matplotlib as mpl
 from iris_fitting import extract_irisL2data
 from sunpy.net import Fido, attrs as a
 from astropy import units as u
-
+import tarfile
 from scipy.constants import speed_of_light
 
-from iris_fitting import fit_iris_lines
-from iris_fitting import fit_raster
-from iris_fitting import iris_get_mg_features_lv2 as get_mg
-from iris_fitting import get_mgii_quartiles
 
 if os.uname().sysname == 'Darwin':
     IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.tar.gz'
