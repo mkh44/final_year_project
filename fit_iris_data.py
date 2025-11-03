@@ -635,33 +635,33 @@ def plot_mgii_sns_quartiles(mgii_k_integ_int,mgii_h_integ_int,mgii_k_vdopp,mgii_
 def fit_iris(file, iris_window, event, do_fit=False):
 
 # Check the wavelength window
-    # match iris_window:
-    #     case "Si IV 1394 1403":
-    #         open_window='Si IV 1403'
-    #         save_window = 'Si IV 1403'
-    #     case "C II 1334 1336":
-    #         open_window='C II 1336'
-    #         save_window = 'C II 1334'
-    #     case "C II 1335 1336":
-    #         open_window='C II 1336'
-    #         save_window = 'C II 1335'
-    #     case _:
-    #         open_window = iris_window
-    #         save_window = iris_window
+    match iris_window:
+        case "Si IV 1394 1403":
+            open_window='Si IV 1403'
+            save_window = 'Si IV 1403'
+        case "C II 1334 1336":
+            open_window='C II 1336'
+            save_window = 'C II 1334'
+        case "C II 1335 1336":
+            open_window='C II 1336'
+            save_window = 'C II 1335'
+        case _:
+            open_window = iris_window
+            save_window = iris_window
     
     # Check the wavelength window without using match case
-    if iris_window == 'Si IV 1394 1403':
-        open_window = 'Si IV 1403'
-        save_window = 'Si IV 1403'
-    if iris_window == 'C II 1334 1336':
-        open_window ='C II 1336'
-        save_window = 'C II 1334'
-    if iris_window == 'C II 1335 1336':
-        open_window ='C II 1336'
-        save_window = 'C II 1335'
-    else:
-        open_window = iris_window
-        save_window = iris_window
+    # if iris_window == 'Si IV 1394 1403':
+    #     open_window = 'Si IV 1403'
+    #     save_window = 'Si IV 1403'
+    # if iris_window == 'C II 1334 1336':
+    #     open_window ='C II 1336'
+    #     save_window = 'C II 1334'
+    # if iris_window == 'C II 1335 1336':
+    #     open_window ='C II 1336'
+    #     save_window = 'C II 1335'
+    # else:
+    #     open_window = iris_window
+    #     save_window = iris_window
 
     a = fit_raster(file, iris_window, fulldisk=False)
 
@@ -893,25 +893,25 @@ def fitdata(event):
         for iris_window in iris_window_list:
 
 # Check the wavelength window
-            # match iris_window:
-            #     case 'Si IV 1394 1403': 
-            #         save_window = 'Si IV 1403'
-            #     case 'C II 1334 1336': 
-            #         save_window = 'C II 1334'
-            #     case 'C II 1335 1336': 
-            #         save_window = 'C II 1335'
-            #     case _:
-            #         save_window = iris_window
+            match iris_window:
+                case 'Si IV 1394 1403': 
+                    save_window = 'Si IV 1403'
+                case 'C II 1334 1336': 
+                    save_window = 'C II 1334'
+                case 'C II 1335 1336': 
+                    save_window = 'C II 1335'
+                case _:
+                    save_window = iris_window
 
 # Check the wavelength window without using match case
-            if iris_window == 'Si IV 1394 1403':
-                save_window = 'Si IV 1403'
-            if iris_window == 'C II 1334 1336':
-                save_window = 'C II 1334'
-            if iris_window == 'C II 1335 1336':
-                save_window = 'C II 1335'
-            else:
-                save_window = iris_window
+            # if iris_window == 'Si IV 1394 1403':
+            #     save_window = 'Si IV 1403'
+            # if iris_window == 'C II 1334 1336':
+            #     save_window = 'C II 1334'
+            # if iris_window == 'C II 1335 1336':
+            #     save_window = 'C II 1335'
+            # else:
+            #     save_window = iris_window
 
             print('Processing '+save_window)
 
