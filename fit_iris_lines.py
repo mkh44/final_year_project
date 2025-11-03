@@ -19,6 +19,7 @@ from sunpy.coordinates import frames
 from astropy import units as u
 from sunpy.map import Map, make_fitswcs_header
 import scipy.constants as const
+from iris_fitting import general_routines
 from general_routines import closest
 from scipy.integrate import cumulative_simpson
 from astropy.wcs import WCS
