@@ -26,12 +26,12 @@ import tarfile
 from scipy.constants import speed_of_light
 
 
-if os.uname().sysname == 'Darwin':
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.tar.gz'
+if os.uname().sysname == 'Linux':
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.fits'
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.tar.gz'
-    output_loc = 'C:/Users/molly/OneDrive - Dublin City University/PHA4/Final_Year_Project'
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.fits'
+    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 
 # Plot the output of the fitting routine
