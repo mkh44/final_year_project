@@ -27,10 +27,10 @@ from scipy.constants import speed_of_light
 
 
 if os.uname().sysname == 'Linux':
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.fits'
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/iris_l2_20503_072923_4204700135_raster.fits'
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 
@@ -885,7 +885,7 @@ def fitdata(event):
         
         # Define the windows to be processed. Can process both Si IV lines and both C II lines. 
         # Note that C II lines need to be called as: C II 1334 1336 & C II 1335 1336
-        iris_window_list = ['C II 1334 1336']#, 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
+        iris_window_list = ['C II 1334 1336', 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
 
         for iris_window in iris_window_list:
 
