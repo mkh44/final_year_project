@@ -8,4 +8,4 @@ with asdf.open(output_loc+event+'/IRIS_fitting_'+save_window.replace(' ', '_')+'
     dopp_map = af.tree['dopp_map']
     width_map = af.tree['width_map']
     vnt_map = af.tree['vnt_map']
-    asym_map = af.tree['asym_map'
+    asym_map = af.tree['asym_map']
