@@ -2,6 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import asdf
+import os
+
+if os.uname().sysname == 'Linux':
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
+else:
+    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 with asdf.open(output_loc+event+'/IRIS_fitting_'+save_window.replace(' ', '_')+'_'+img_time+'.asdf') as af:
     int_map = af.tree['int_map']
