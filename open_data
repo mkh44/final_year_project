@@ -1,1 +1,11 @@
+##!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+import asdf
+
+with asdf.open(output_loc+event+'/IRIS_fitting_'+save_window.replace(' ', '_')+'_'+img_time+'.asdf') as af:
+    int_map = af.tree['int_map']
+    dopp_map = af.tree['dopp_map']
+    width_map = af.tree['width_map']
+    vnt_map = af.tree['vnt_map']
+    asym_map = af.tree['asym_map'
