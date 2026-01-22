@@ -7,8 +7,8 @@
 import glob
 import os
 from iris_fitting.fit_iris_lines import fit_raster
-from iris_fitting import iris_get_mg_features_lv2 as get_mg
-from iris_fitting import get_mgii_quartiles
+#from iris_fitting import iris_get_mg_features_lv2 as get_mg
+#from iris_fitting import get_mgii_quartiles
 import asdf
 from astropy.io import fits
 import datetime as dt
@@ -18,27 +18,17 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
-from iris_fitting import extract_irisL2data
+#from iris_fitting import extract_irisL2data
 from sunpy.net import Fido, attrs as a
 from astropy import units as u
 import tarfile
 from scipy.constants import speed_of_light
 
-
-c_1334 = glob.glob('/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/20230503_072923/IRIS_fitting_C_II_1334_20230503_072923.asdf')
-
-with asdf.open(c_1334[0]) as af:
-    int_1334 = af.tree['int_map']
-    dopp_1334 = af.tree['dopp_map']
-    width_1334 = af.tree['width_map']
-    vnt_1334 = af.tree['vnt_map']
-    asym_1334 = af.tree['asym_map']
-
+output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 # Define time frame
 t_start = 6500    # seconds from raster start
 t_end   = 7000    # seconds from raster start
-
 
 # Plot the output of the fitting routine if fitting sit-and-stare data
 def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,event,main_header):
@@ -56,7 +46,6 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     max_wid = 0.1
     asym_rng = 1
     max_vnt = 30
-
 
 # Set the plotting parameters
     cadence = main_header['STEPT_AV']
@@ -136,8 +125,29 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
 
     plt.suptitle(iris_window+r'$\AA$; '+plot_time)
-    plt.savefig(output_loc+event+'/IRIS_analysis_'+iris_window.replace(' ', '_')+'_'+file_time+'.png', bbox_inches='tight')
+    plt.savefig(output_loc+event+'/IRIS_zoomed_plot_'+iris_window.replace(' ', '_')+'_'+file_time+'.png', bbox_inches='tight')
     plt.close(fig)
 
 
-            
+
+c_1334 = glob.glob('/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/20230503_072923/IRIS_fitting_C_II_1334_20230503_072923.asdf')
+
+with asdf.open(c_1334[0]) as af:
+    int_1334 = af.tree['int_map']
+    dopp_1334 = af.tree['dopp_map']
+    width_1334 = af.tree['width_map']
+    vnt_1334 = af.tree['vnt_map']
+    asym_1334 = af.tree['asym_map']
+
+# Define event
+iris_window = "C II 1334"
+event = "20230503_072923"
+
+# Ensure output directory exists
+os.makedirs(output_loc + event, exist_ok=True)
+
+
+iris_fits = "/mnt/nas/ug/hurlem24/iris_data/iris_l2/20230503/iris_l2_20230503_072923_raster.fits"
+main_header = fits.getheader(iris_fits, 0)
+
+plot_iris_sns_fits(int_1334, dopp_1334, width_1334, vnt_1334, asym_1334, iris_window, event, main_header)          
