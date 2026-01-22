@@ -57,8 +57,15 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     asym_rng = 1
     max_vnt = 30
 
+
+# Set the plotting parameters
+    cadence = main_header['STEPT_AV']
+    t_array = np.arange(0, int_map.data.shape[1])*cadence
+    t_mask = (t_array >= t_start) & (t_array <= t_end)
+    t_inds = np.where(t_mask)[0]
+   
 # Slice raster maps in time
-    int_data   = int_data[:, t_inds]
+    int_data   = int_map.data[:, t_inds]
     dopp_data  = dopp_map.data[:, t_inds]
     width_data = width_map.data[:, t_inds]
     vnt_data   = vnt_map.data[:, t_inds]
@@ -66,12 +73,9 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
     t_plot = t_array[t_inds]
 
-# Set the plotting parameters
-    cadence = main_header['STEPT_AV']
-    t_array = np.arange(0, int_data.shape[1])*cadence
-    t_mask = (t_array >= t_start) & (t_array <= t_end)
-    t_inds = np.where(t_mask)[0]
-    slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (np.arange(int_data.shape[0]) - int_map.meta['crpix2'])
+# Slit position
+    slit_pos = (int_map.meta['crval2'] + int_map.meta['cdelt2'] * (np.arange(int_data.shape[0]) - int_map.meta['crpix2'])
+
 
 # Intensity map
     ax1 = fig.add_subplot(gs[0,0], label='a)')
@@ -91,7 +95,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 # Asymmetry map
     ax2 = fig.add_subplot(gs[1,0], label='b)')
     norm = colors.Normalize(vmin = -asym_rng, vmax = asym_rng)
-    plt.imshow(asym_map.data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax2, 
+    plt.imshow(asym_data, norm=norm, cmap = mpl.colormaps['seismic'], axes=ax2, 
                extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax2.set_ylabel(" ")
     ax2.set_xlabel(" ")
@@ -102,7 +106,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 # Doppler map
     ax3 = fig.add_subplot(gs[2,0], label='c)')
     norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
-    plt.imshow(dopp_map.data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax3, 
+    plt.imshow(dopp_data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax3, 
                extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax3.set_ylabel("Solar Y (arcsec)")
     ax3.set_xlabel(" ")
@@ -113,7 +117,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 # Line width
     ax4 = fig.add_subplot(gs[3,0], label='d)')
     norm = colors.Normalize(vmin = 0, vmax = max_wid)
-    plt.imshow(width_map.data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax4, 
+    plt.imshow(width_data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax4, 
                extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax4.set_ylabel(" ")
     ax4.set_xlabel(" ")
@@ -124,7 +128,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 # Nonthermal velocity
     ax5 = fig.add_subplot(gs[4,0], label='e)')
     norm = colors.Normalize(vmin = 0, vmax = max_vnt)
-    plt.imshow(vnt_map.data, norm=norm, cmap = mpl.colormaps['inferno'], axes=ax5, 
+    plt.imshow(vnt_data, norm=norm, cmap = mpl.colormaps['inferno'], axes=ax5, 
                extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax5.set_ylabel(" ")
     ax5.set_xlabel("Time from raster start (s)")
