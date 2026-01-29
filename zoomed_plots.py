@@ -18,7 +18,8 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
-from sunpy.net import Fido, attrs as a
+
+from sunpy.net import fido_factory, attrs as a
 #from iris_fitting import extract_irisL2data
 from astropy import units as u
 import tarfile
