@@ -25,7 +25,7 @@ from astropy import units as u
 import tarfile
 from scipy.constants import speed_of_light
 
-output_loc = glob.glob("C:\\Users\\molly\\OneDrive - Dublin City University\\PHA4\\Final_Year_Project\\outputs")
+output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
 
 # Define time frame
 t_start = 6500    # seconds from raster start
@@ -126,8 +126,11 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
 
 
-c_1334 = "C:\\Users\\molly\\OneDrive - Dublin City University\\PHA4\\Final_Year_Project\\outputs\\IRIS_fitting_C_II_1334_20230503_072923.asdf"
+c_1334 = glob.glob(os.path.join(output_loc, "*.asdf"))
+if not c_1334:
+    raise FileNotFoundError(f"No ASDF files found in {output_loc}")
 
+print(c_1334)
 with asdf.open(c_1334[0]) as af:
     int_1334 = af.tree['int_map']
     dopp_1334 = af.tree['dopp_map']
@@ -135,14 +138,15 @@ with asdf.open(c_1334[0]) as af:
     vnt_1334 = af.tree['vnt_map']
     asym_1334 = af.tree['asym_map']
 
+print(int_1334.meta.keys())
 # Define event
 iris_window = "C II 1334"
 event = "20230503_072923"
 
 # Ensure output directory exists
 os.makedirs(os.path.join(output_loc, event), exist_ok=True)
-print(int_1334.meta.keys())
 
+# Get cadence from .fits file as asdf does not contain it
 iris_fits = "C:\\Users\\molly\\OneDrive - Dublin City University\\PHA4\\Final_Year_Project\\outputs"
 main_header = fits.getheader(iris_fits[0], 0)
 
