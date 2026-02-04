@@ -25,7 +25,7 @@ from astropy import units as u
 import tarfile
 from scipy.constants import speed_of_light
 
-output_loc = glob.glob('/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/')
+output_loc = glob.glob("C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs")
 
 # Define time frame
 t_start = 6500    # seconds from raster start
@@ -126,7 +126,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
 
 
-c_1334 = glob.glob('/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/20230503_072923/IRIS_fitting_C_II_1334_20230503_072923.asdf')
+c_1334 = glob.glob("C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs")
 
 with asdf.open(c_1334[0]) as af:
     int_1334 = af.tree['int_map']
@@ -143,7 +143,7 @@ event = "20230503_072923"
 os.makedirs(output_loc + event, exist_ok=True)
 
 
-iris_fits = glob.glob("/mnt/nas/ug/hurlem24/iris_data/iris_l2/20230503/iris_l2_20230503_072923_raster.fits")
+iris_fits = glob.glob("C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs")
 main_header = fits.getheader(iris_fits[0], 0)
 
 plot_iris_sns_fits(int_1334, dopp_1334, width_1334, vnt_1334, asym_1334, iris_window, event, main_header)          
