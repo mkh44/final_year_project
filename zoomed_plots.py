@@ -121,7 +121,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
 
     plt.suptitle(iris_window+r'$\AA$; '+plot_time)
-    plt.savefig(os.path.join(output_loc, event, f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_loc, event), f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'.png', bbox_inches='tight')
     plt.close(fig)
 
 
