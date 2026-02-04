@@ -25,11 +25,6 @@ from astropy import units as u
 import tarfile
 from scipy.constants import speed_of_light
 
-output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
-
-# Define time frame
-t_start = 9000    # seconds from raster start
-t_end   = 11000    # seconds from raster start
 
 # Plot the output of the fitting routine if fitting sit-and-stare data
 def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,event,main_header):
@@ -130,34 +125,65 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+f"{t_start:.0f}-{t_end:.0f}s_from_raster_start.png", bbox_inches='tight')
     plt.close(fig)
 
-input_loc = glob.glob(os.path.join(output_loc, "*.asdf"))
-if not input_loc:
+# EVENT
+event = '20230503_072923'
+output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
+
+# Define time frame
+t_start = 9000    # seconds from raster start
+t_end   = 11000    # seconds from raster start
+
+asdf_files = glob.glob(os.path.join(output_loc, "*.asdf"))
+
+if not asdf_files:
     raise FileNotFoundError(f"No ASDF files found in {output_loc}")
 
 
-#check if location is correct by printing
-#print(c_1334)
 
-# Define event
-iris_window_list = ['C II 1334 1336', 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
+# Get map names
+#----------------------
+for asdf_file in asdf_files:
+    iris_window_underscore = os.path.basename(asdf_file).replace('IRIS_fitting_', '').replace(event, '').replace('.asdf', '')
+    iris_window = iris_window_underscore.replace('_', ' ')
+    print(iris_window)
+    with asdf.open(asdf_file) as af:
+        possible_int_keys = [key for key in af.tree.keys() if 'int' in key.lower()]
+        if not possible_int_keys:
+            raise KeyError(f"No intensity map found in {asdf_file}")
+        int_key = possible_int_keys[0]
+        int_map = af.tree[int_key]
 
-event = "20230503_072923"
+        possible_dopp_keys = [key for key in af.tree.keys() if 'dopp' in key.lower()]
+        if not possible_dopp_keys:
+            raise KeyError(f"No Doppler map found in {asdf_file}")
+        dopp_key = possible_dopp_keys[0]
+        dopp_map = af.tree[dopp_key]
 
-with asdf.open(input_loc+event+ f'IRIS_fitting_{iris_window.replace(' ', '_')}'+'.asdf') as af:
-    int_map = af.tree['int_map']
-    dopp_map = af.tree['dopp_map']
-    width_map = af.tree['width_map']
-    vnt_map = af.tree['vnt_map']
-    asym_map = af.tree['asym_map']
+        possible_width_keys = [key for key in af.tree.keys() if 'width' in key.lower()]
+        if not possible_width_keys:
+            raise KeyError(f"No width map found in {asdf_file}")
+        width_key = possible_width_keys[0]
+        width_map = af.tree[width_key]
 
-#print(int_1334.meta.keys())
+        possible_vnt_keys = [key for key in af.tree.keys() if 'vnt' in key.lower()]
+        if not possible_vnt_keys:
+            raise KeyError(f"No vnt map found in {asdf_file}")
+        vnt_key = possible_vnt_keys[0]
+        vnt_map = af.tree[vnt_key]
 
-# Ensure output directory exists
-os.makedirs(os.path.join(output_loc, event), exist_ok=True)
+        possible_asym_keys = [key for key in af.tree.keys() if 'asym' in key.lower()]
+        if not possible_asym_keys:
+            raise KeyError(f"No asym map found in {asdf_file}")
+        asym_key = possible_asym_keys[0]
+        asym_map = af.tree[asym_key]
 
-# Get cadence from .fits file as asdf does not contain it
-iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
-main_header = fits.getheader(iris_fits[0], 0)
+        print(vnt_map)
 
-for iris_window in event:
+    # Get cadence from .fits file as asdf does not contain it
+    iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
+    main_header = fits.getheader(iris_fits[0], 0)
+
+    # Ensure output directory exists
+    os.makedirs(os.path.join(output_loc, iris_window), exist_ok=True)
+
     plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header)
