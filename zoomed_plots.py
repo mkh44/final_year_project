@@ -121,7 +121,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
 
     plt.suptitle(iris_window+r'$\AA$; '+plot_time)
-    plt.savefig(os.path.join(output_loc, event), f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+t_start+'-'+t_end+'from_raster_start'+'.png', bbox_inches='tight')
     plt.close(fig)
 
 
@@ -130,7 +130,9 @@ c_1334 = glob.glob(os.path.join(output_loc, "*.asdf"))
 if not c_1334:
     raise FileNotFoundError(f"No ASDF files found in {output_loc}")
 
-print(c_1334)
+#check if location is correct by printing
+#print(c_1334)
+
 with asdf.open(c_1334[0]) as af:
     int_1334 = af.tree['int_map']
     dopp_1334 = af.tree['dopp_map']
@@ -138,7 +140,7 @@ with asdf.open(c_1334[0]) as af:
     vnt_1334 = af.tree['vnt_map']
     asym_1334 = af.tree['asym_map']
 
-print(int_1334.meta.keys())
+#print(int_1334.meta.keys())
 # Define event
 iris_window = "C II 1334"
 event = "20230503_072923"
