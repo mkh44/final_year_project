@@ -147,7 +147,7 @@ event = "20230503_072923"
 os.makedirs(os.path.join(output_loc, event), exist_ok=True)
 
 # Get cadence from .fits file as asdf does not contain it
-iris_fits = "C:\\Users\\molly\\OneDrive - Dublin City University\\PHA4\\Final_Year_Project\\outputs"
+iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
 main_header = fits.getheader(iris_fits[0], 0)
 
 plot_iris_sns_fits(int_1334, dopp_1334, width_1334, vnt_1334, asym_1334, iris_window, event, main_header)          
