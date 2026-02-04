@@ -28,8 +28,8 @@ from scipy.constants import speed_of_light
 output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
 
 # Define time frame
-t_start = 6500    # seconds from raster start
-t_end   = 7000    # seconds from raster start
+t_start = 9000    # seconds from raster start
+t_end   = 11000    # seconds from raster start
 
 # Plot the output of the fitting routine if fitting sit-and-stare data
 def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,event,main_header):
@@ -72,7 +72,6 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
 # Slit position
     slit_pos = (int_map.meta['crval2'] + int_map.meta['cdelt2']) * (np.arange(int_data.shape[0]) - int_map.meta['crpix2'])
-
 
 # Intensity map
     ax1 = fig.add_subplot(gs[0,0], label='a)')
