@@ -43,6 +43,13 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plot_time = dt.datetime.strftime(dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y/%m/%dT%H:%M:%S')
     file_time = dt.datetime.strftime(dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y%m%d_%H%M%S')
 
+    # Absolute time of file
+    obs_start = dt.datetime.strptime(int_1334.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f')
+    abs_start = obs_start + dt.timedelta(seconds=float(t_start))
+    abs_end = obs_start + dt.timedelta(seconds=float(t_end))
+    abs_start_str = abs_start.strftime('%H:%M:%S')
+    abs_end_str = abs_end.strftime('%H:%M:%S')
+
     dopp_rng = 10
     max_wid = 0.1
     asym_rng = 1
@@ -120,10 +127,9 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
     plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
 
-    plt.suptitle(iris_window+r'$\AA$; '+plot_time)
+    plt.suptitle(iris_window+r'$\AA$; '+abs_start_str+'-'+abs_end_str)
     plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+t_start+'-'+t_end+'from_raster_start'+'.png', bbox_inches='tight')
     plt.close(fig)
-
 
 
 c_1334 = glob.glob(os.path.join(output_loc, "*.asdf"))
