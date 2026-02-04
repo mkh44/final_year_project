@@ -141,7 +141,7 @@ event = "20230503_072923"
 
 # Ensure output directory exists
 os.makedirs(os.path.join(output_loc, event), exist_ok=True)
-
+print(int_1334.meta.keys())
 
 iris_fits = "C:\\Users\\molly\\OneDrive - Dublin City University\\PHA4\\Final_Year_Project\\outputs"
 main_header = fits.getheader(iris_fits[0], 0)
