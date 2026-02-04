@@ -126,7 +126,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
 
 
 
-c_1334 = glob.glob('/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/20230503_072923/IRIS_fitting_C_II_1334_20230503_072923.asdf')
+c_1334 = glob.glob('C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs')
 
 with asdf.open(c_1334[0]) as af:
     int_1334 = af.tree['int_map']
