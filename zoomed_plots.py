@@ -44,7 +44,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     file_time = dt.datetime.strftime(dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y%m%d_%H%M%S')
 
     # Absolute time of file
-    obs_start = dt.datetime.strptime(int_1334.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f')
+    obs_start = dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f')
     abs_start = obs_start + dt.timedelta(seconds=float(t_start))
     abs_end = obs_start + dt.timedelta(seconds=float(t_end))
     abs_start_str = abs_start.strftime('%H:%M:%S')
@@ -130,25 +130,27 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+f"{t_start:.0f}-{t_end:.0f}s_from_raster_start.png", bbox_inches='tight')
     plt.close(fig)
 
-
-c_1334 = glob.glob(os.path.join(output_loc, "*.asdf"))
-if not c_1334:
+input_loc = glob.glob(os.path.join(output_loc, "*.asdf"))
+if not input_loc:
     raise FileNotFoundError(f"No ASDF files found in {output_loc}")
+
 
 #check if location is correct by printing
 #print(c_1334)
 
-with asdf.open(c_1334[0]) as af:
-    int_1334 = af.tree['int_map']
-    dopp_1334 = af.tree['dopp_map']
-    width_1334 = af.tree['width_map']
-    vnt_1334 = af.tree['vnt_map']
-    asym_1334 = af.tree['asym_map']
+# Define event
+iris_window_list = ['C II 1334 1336', 'C II 1335 1336', 'Si IV 1394', 'Si IV 1403']
+
+event = "20230503_072923"
+
+with asdf.open(input_loc+event+ f'IRIS_fitting_{iris_window.replace(' ', '_')}'+'.asdf') as af:
+    int_map = af.tree['int_map']
+    dopp_map = af.tree['dopp_map']
+    width_map = af.tree['width_map']
+    vnt_map = af.tree['vnt_map']
+    asym_map = af.tree['asym_map']
 
 #print(int_1334.meta.keys())
-# Define event
-iris_window = "C II 1334"
-event = "20230503_072923"
 
 # Ensure output directory exists
 os.makedirs(os.path.join(output_loc, event), exist_ok=True)
@@ -157,4 +159,5 @@ os.makedirs(os.path.join(output_loc, event), exist_ok=True)
 iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
 main_header = fits.getheader(iris_fits[0], 0)
 
-plot_iris_sns_fits(int_1334, dopp_1334, width_1334, vnt_1334, asym_1334, iris_window, event, main_header)          
+for iris_window in event:
+    plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header)
