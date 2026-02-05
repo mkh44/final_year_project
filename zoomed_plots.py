@@ -205,7 +205,7 @@ for asdf_file in asdf_files:
         "Si IV 1394": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
         "C II 1334": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
         "C II 1335": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
-        "Mg II": {"dopp_rng": 10, "max_wid": 2, "asym_rng": 1, "max_vnt": 30},}
+        "smooth MgII": {"dopp_rng": 10, "max_wid": 2, "asym_rng": 1, "max_vnt": 30},}
 
     # Default if a window is not in the dictionary
     default_ranges = {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30}
