@@ -146,8 +146,8 @@ event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
 
 # Define time frame
-t_start = 9000    # seconds from raster start
-t_end   = 11000    # seconds from raster start
+t_start = 10000    # seconds from raster start
+t_end   = 13000    # seconds from raster start
 
 asdf_files = glob.glob(os.path.join(output_loc, "*.asdf"))
 
@@ -205,7 +205,7 @@ for asdf_file in asdf_files:
         "Si IV 1394": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
         "C II 1334": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
         "C II 1335": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
-        "smooth MgII": {"dopp_rng": 10, "max_wid": 0.5, "asym_rng": 1, "max_vnt": 30},}
+        "smooth MgII": {"dopp_rng": 10, "max_wid": 0.8, "asym_rng": 1, "max_vnt": 30},}
 
     # Default if a window is not in the dictionary
     default_ranges = {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30}
