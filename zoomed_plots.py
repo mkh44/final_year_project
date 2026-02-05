@@ -29,7 +29,7 @@ from scipy.constants import speed_of_light
 
 
 # Plot the output of the fitting routine if fitting sit-and-stare data
-def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,event,main_header):
+def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,event,main_header,asym_rng,dopp_rng,max_wid,max_vnt):
 
     fig = plt.figure(constrained_layout=True, figsize=(10, 10))
     plt.rcParams['font.size'] = '10'
@@ -51,10 +51,12 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     abs_start_str = abs_start.strftime('%H:%M:%S')
     abs_end_str = abs_end.strftime('%H:%M:%S')
 
-    dopp_rng = 10
-    max_wid = 2
-    asym_rng = 1
-    max_vnt = 30
+    #
+    # dopp_rng = 10
+    # max_wid = 0.1
+    # asym_rng = 1
+    # max_vnt = 30
+
 
 # Set the plotting parameters
     cadence = main_header['STEPT_AV']
@@ -158,7 +160,9 @@ if not asdf_files:
 #----------------------
 for asdf_file in asdf_files:
     iris_window_underscore = os.path.basename(asdf_file).replace('IRIS_fitting_', '').replace(event, '').replace('.asdf', '')
-    iris_window = iris_window_underscore.replace('_', ' ')
+    iris_window = iris_window_underscore.replace('_', ' ').strip()
+
+
     print(iris_window)
     with asdf.open(asdf_file) as af:
         possible_int_keys = [key for key in af.tree.keys() if 'int' in key.lower()]
@@ -194,6 +198,17 @@ for asdf_file in asdf_files:
         asym_key = possible_asym_keys[0]
         asym_map = af.tree[asym_key]
 
+    # Find ranges
+
+    # Define per-window plotting ranges
+    plot_ranges = {
+        "Si IV 1394": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
+        "C II 1334": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
+        "C II 1335": {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30},
+        "Mg II": {"dopp_rng": 10, "max_wid": 2, "asym_rng": 1, "max_vnt": 30},}
+
+    # Default if a window is not in the dictionary
+    default_ranges = {"dopp_rng": 10, "max_wid": 0.1, "asym_rng": 1, "max_vnt": 30}
 
     # Get cadence from .fits file as asdf does not contain it
     iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
@@ -201,5 +216,11 @@ for asdf_file in asdf_files:
 
     # Ensure output directory exists
     os.makedirs(os.path.join(output_loc, iris_window), exist_ok=True)
+    ranges = plot_ranges.get(iris_window, default_ranges)
+    dopp_rng = ranges["dopp_rng"]
+    max_wid = ranges["max_wid"]
+    asym_rng = ranges["asym_rng"]
+    max_vnt = ranges["max_vnt"]
 
-    plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header)
+    print(dopp_rng, max_wid, max_vnt, asym_rng)
+    plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header, asym_rng, dopp_rng, max_wid, max_vnt)
