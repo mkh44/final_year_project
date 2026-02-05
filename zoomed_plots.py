@@ -34,8 +34,12 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     fig = plt.figure(constrained_layout=True, figsize=(10, 10))
     plt.rcParams['font.size'] = '10'
 
-    gs = GridSpec(nrows=5, ncols=1, hspace=0.05, wspace=0.05)
-    gs.update(left=0.05, right=0.95, bottom=0.04, top=0.95)
+    if vnt_map is not None:
+        nrows = 5
+    else:
+        nrows = 4
+    gs = GridSpec(nrows=nrows, ncols=1, hspace=0.05, wspace=0.05)
+    gs.update(left=0.08, right=0.95, bottom=0.06, top=0.95)
 
     plot_time = dt.datetime.strftime(dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y/%m/%dT%H:%M:%S')
     file_time = dt.datetime.strftime(dt.datetime.strptime(int_map.meta['date-obs'], '%Y-%m-%dT%H:%M:%S.%f'), '%Y%m%d_%H%M%S')
@@ -62,12 +66,17 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     int_data   = int_map.data[:, t_start:t_end]
     dopp_data  = dopp_map.data[:, t_start:t_end]
     width_data = width_map.data[:, t_start:t_end]
-    vnt_data   = vnt_map.data[:, t_start:t_end]
     asym_data  = asym_map.data[:, t_start:t_end]
+    #Only create vnt_data if vnt_map exists
+    if vnt_map is not None:
+        vnt_data = vnt_map.data[:, t_start:t_end]
+    else:
+        vnt_data = None
+
 
     t_plot = t_array[t_start:t_end]
 
-# Slit position
+    # Slit position
     slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (np.arange(int_map.data.shape[0]) - int_map.meta['crpix2'])
 
 # Intensity map
@@ -98,7 +107,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     ax3 = fig.add_subplot(gs[2,0], label='c)')
     norm = colors.Normalize(vmin = -dopp_rng, vmax = dopp_rng)
     plt.imshow(dopp_data, norm=norm, cmap = mpl.colormaps['coolwarm'], axes=ax3, extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax3.set_ylabel("Solar Y (arcsec)")
+    ax3.set_ylabel(" ")
     ax3.set_xlabel(" ")
     ax3.set_xticklabels([])
 
@@ -115,15 +124,17 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.colorbar(location='right', label=r'd) Width ($\AA$)', shrink=0.6, ax = ax4)
     
 # Nonthermal velocity
-    ax5 = fig.add_subplot(gs[4,0], label='e)')
-    norm = colors.Normalize(vmin = 0, vmax = max_vnt)
-    plt.imshow(vnt_data, norm=norm, cmap = mpl.colormaps['inferno'], axes=ax5, extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
-    ax5.set_ylabel(" ")
-    ax5.set_xlabel("Time from raster start (s)")
+    if vnt_data is not None:
+        ax5 = fig.add_subplot(gs[4,0], label='e)')
+        norm = colors.Normalize(vmin = 0, vmax = max_vnt)
+        plt.imshow(vnt_data, norm=norm, cmap = mpl.colormaps['inferno'], axes=ax5, extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
+        plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
+        ax5.set_ylabel(" ")
+        ax5.set_xlabel(" ")
 
-    plt.colorbar(location='right', label=r'e) v$_{nt}$ ($km~s^{-1}$)', shrink=0.6, ax = ax5)
-
-    plt.suptitle(iris_window+r'$\AA$; '+abs_start_str+'-'+abs_end_str)
+    fig.supxlabel("Time from raster start (s)")
+    fig.supylabel('Solar Y (arcsec)')
+    plt.suptitle(iris_window + r'$\AA$; ' + abs_start_str + '-' + abs_end_str)
     plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+f"{t_start:.0f}-{t_end:.0f}s_from_raster_start.png", bbox_inches='tight')
     plt.close(fig)
 
@@ -168,10 +179,13 @@ for asdf_file in asdf_files:
         width_map = af.tree[width_key]
 
         possible_vnt_keys = [key for key in af.tree.keys() if 'vnt' in key.lower()]
-        if not possible_vnt_keys:
-            raise KeyError(f"No vnt map found in {asdf_file}")
-        vnt_key = possible_vnt_keys[0]
-        vnt_map = af.tree[vnt_key]
+        if possible_vnt_keys:
+            vnt_key = possible_vnt_keys[0]
+            vnt_map = af.tree[vnt_key]
+        else:
+            vnt_map = None
+            print(f'Warning: No VNT map found in {asdf_file}. Skipping vnt plot.')
+
 
         possible_asym_keys = [key for key in af.tree.keys() if 'asym' in key.lower()]
         if not possible_asym_keys:
@@ -179,7 +193,6 @@ for asdf_file in asdf_files:
         asym_key = possible_asym_keys[0]
         asym_map = af.tree[asym_key]
 
-        print(vnt_map)
 
     # Get cadence from .fits file as asdf does not contain it
     iris_fits = glob.glob(os.path.join(r"C:\Users\molly\Downloads\iris", "*.fits"))
