@@ -6,6 +6,8 @@
 # %%
 import glob
 import os
+import pdb
+
 #from iris_fitting.fit_iris_lines import fit_raster
 #from iris_fitting import iris_get_mg_features_lv2 as get_mg
 #from iris_fitting import get_mgii_quartiles
@@ -57,16 +59,16 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     t_inds = np.where(t_mask)[0]
    
 # Slice raster maps in time
-    int_data   = int_map.data[:, t_inds]
-    dopp_data  = dopp_map.data[:, t_inds]
-    width_data = width_map.data[:, t_inds]
-    vnt_data   = vnt_map.data[:, t_inds]
-    asym_data  = asym_map.data[:, t_inds]
+    int_data   = int_map.data[:, t_start:t_end]
+    dopp_data  = dopp_map.data[:, t_start:t_end]
+    width_data = width_map.data[:, t_start:t_end]
+    vnt_data   = vnt_map.data[:, t_start:t_end]
+    asym_data  = asym_map.data[:, t_start:t_end]
 
-    t_plot = t_array[t_inds]
+    t_plot = t_array[t_start:t_end]
 
 # Slit position
-    slit_pos = (int_map.meta['crval2'] + int_map.meta['cdelt2']) * (np.arange(int_data.shape[0]) - int_map.meta['crpix2'])
+    slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (np.arange(int_map.data.shape[0]) - int_map.meta['crpix2'])
 
 # Intensity map
     ax1 = fig.add_subplot(gs[0,0], label='a)')
