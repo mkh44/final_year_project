@@ -52,7 +52,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     abs_end_str = abs_end.strftime('%H:%M:%S')
 
     dopp_rng = 10
-    max_wid = 0.1
+    max_wid = 2
     asym_rng = 1
     max_vnt = 30
 
@@ -119,7 +119,8 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.imshow(width_data, norm=norm, cmap = mpl.colormaps['cubehelix'], axes=ax4, extent=[t_plot.min(), t_plot.max(), slit_pos.min(), slit_pos.max()], aspect='auto')
     ax4.set_ylabel(" ")
     ax4.set_xlabel(" ")
-    ax4.set_xticklabels([])
+    if vnt_data is not None:
+        ax4.set_xticklabels([])
 
     plt.colorbar(location='right', label=r'd) Width ($\AA$)', shrink=0.6, ax = ax4)
     
