@@ -51,11 +51,6 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     abs_start_str = abs_start.strftime('%H:%M:%S')
     abs_end_str = abs_end.strftime('%H:%M:%S')
 
-    #
-    # dopp_rng = 10
-    # max_wid = 0.1
-    # asym_rng = 1
-    # max_vnt = 30
 
 
 # Set the plotting parameters
