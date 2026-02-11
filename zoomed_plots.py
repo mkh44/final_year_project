@@ -76,6 +76,7 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     # Slit position
     slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (np.arange(int_map.data.shape[0]) - int_map.meta['crpix2'])
 
+    os.makedirs(os.path.join(output_loc), exist_ok=True)
 # Intensity map
     ax1 = fig.add_subplot(gs[0,0], label='a)')
     alpha = 1
@@ -136,9 +137,76 @@ def plot_iris_sns_fits(int_map,dopp_map,width_map,vnt_map,asym_map,iris_window,e
     plt.savefig(os.path.join(output_loc, event) + f"/IRIS_zoomed_plot_"+iris_window.replace(' ', '_')+'_'+file_time+'_'+f"{t_start:.0f}-{t_end:.0f}s_from_raster_start.png", bbox_inches='tight')
     plt.close(fig)
 
+
+def plot_y_for_time_series(int_map, dopp_map, width_map, vnt_map, asym_map,
+                      iris_window, event, main_header,
+                      y_value_arcsec=None, y_index=None):
+    #Cadence
+    cadence = main_header.get('STEPT_AV')
+    nt = int_map.data.shape[1]
+    t_array = np.arange(nt) * cadence
+
+    # Slit pos
+    slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (
+    np.arange(int_map.data.shape[0]) - int_map.meta['crpix2'])
+
+    # Choose Y
+    y_index = np.argmin(np.abs(slit_pos - y_value_arcsec))
+
+    y_selected = slit_pos[y_index]
+
+    #Get time series
+    int_ts = int_map.data[y_index, :]
+    dopp_ts = dopp_map.data[y_index, :]
+    width_ts = width_map.data[y_index, :]
+    asym_ts = asym_map.data[y_index, :]
+    vnt_ts = vnt_map.data[y_index, :] if vnt_map is not None else None
+
+    # Check frequency
+    fft = np.fft.rfft(int_ts - np.nanmean(int_ts))
+    freq = np.fft.rfftfreq(len(int_ts), cadence)
+
+    valid = freq > 0
+
+    plt.plot(1/freq[valid], np.abs(fft[valid]))
+    plt.xlabel("Period (s)")
+    plt.ylabel("Amplitude")
+    plt.show()
+
+
+    #Plotting
+    fig, ax = plt.subplots(4 if vnt_map is None else 5, 1, figsize=(10, 8), sharex=True)
+    ax[0].plot(t_array, int_ts)
+    ax[0].set_ylabel("Intensity")
+
+    ax[1].plot(t_array, asym_ts)
+    ax[1].set_ylabel("RB Asym")
+
+    ax[2].plot(t_array, dopp_ts)
+    ax[2].set_ylabel("v_dopp (km/s)")
+
+    ax[3].plot(t_array, width_ts)
+    ax[3].set_ylabel("Width (Å)")
+
+    if vnt_ts is not None:
+        ax[4].plot(t_array, vnt_ts)
+        ax[4].set_ylabel("v_nt (km/s)")
+
+    ax[-1].set_xlabel("Time (s)")
+
+    plt.suptitle(f"{iris_window} - Y = {y_selected:.2f} arcsec")
+    plt.tight_layout()
+
+    os.makedirs(os.path.join(output_loc, y_loc), exist_ok=True)
+
+    plt.savefig(os.path.join(y_loc, "y_plots") + iris_window.replace(' ', '_') + f"_time_series_Y_{y_selected:.1f}.png")
+    plt.close(fig)
+
 # EVENT
 event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive - Dublin City University\PHA4\Final_Year_Project\outputs"
+y_loc = os.path.join(output_loc, "y_plots")
+os.makedirs(y_loc, exist_ok=True)
 
 # Define time frame
 t_start = 10000    # seconds from raster start
@@ -210,7 +278,6 @@ for asdf_file in asdf_files:
     main_header = fits.getheader(iris_fits[0], 0)
 
     # Ensure output directory exists
-    os.makedirs(os.path.join(output_loc, iris_window), exist_ok=True)
     ranges = plot_ranges.get(iris_window, default_ranges)
     dopp_rng = ranges["dopp_rng"]
     max_wid = ranges["max_wid"]
@@ -219,49 +286,8 @@ for asdf_file in asdf_files:
 
     print(dopp_rng, max_wid, max_vnt, asym_rng)
 
-
-    def plot_y_for_time_series(int_map, dopp_map, width_map, vnt_map, asym_map,
-                          iris_window, event, main_header,
-                          y_value_arcsec=None, y_index=None):
-        #Cadence
-        cadence = main_header.get('STEPT_AV')
-        nt = int_map.data.shape[1]
-        t_array = np.arange(nt) * cadence
-
-        # Slit pos
-        slit_pos = int_map.meta['crval2'] + int_map.meta['cdelt2'] * (
-        np.arange(int_map.data.shape[0]) - int_map.meta['crpix2'])
-
-        # Choose Y
-        y_index = np.argmin(np.abs(slit_pos - y_value_arcsec))
-
-        y_selected = slit_pos[y_index]
-
-        #Get time series
-        int_ts = int_map.data[y_index, :]
-        dopp_ts = dopp_map.data[y_index, :]
-        width_ts = width_map.data[y_index, :]
-        asym_ts = asym_map.data[y_index, :]
-        vnt_ts = vnt_map.data[y_index, :] if vnt_map is not None else None
-
-        #Plotting
-        fig, ax = plt.subplots(5 if vnt_map is None else 4, 1, figsize=(10, 8), sharex=True)
-        ax[0].plot(t_array, int_ts)
-        ax[0].set_ylabel("Intensity")
-
-        ax[1].plot(t_array, asym_ts)
-        ax[1].set_ylabel("RB Asym")
-
-        ax[2].plot(t_array, dopp_ts)
-        ax[2].set_ylabel("v_dopp (km/s)")
-
-        ax[3].plot(t_array, width_ts)
-        ax[3].set_ylabel("Width (Å)")
-
-        if vnt_ts is not None:
-            ax[4].plot(t_array, vnt_ts)
-            ax[4].set_ylabel("v_nt (km/s)")
+    #plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header, asym_rng, dopp_rng, max_wid, max_vnt)
+    plot_y_for_time_series(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header, y_value_arcsec=235)
 
 
 
-    plot_iris_sns_fits(int_map, dopp_map, width_map, vnt_map, asym_map, iris_window, event, main_header, asym_rng, dopp_rng, max_wid, max_vnt)
