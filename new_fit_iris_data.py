@@ -818,7 +818,7 @@ def fit_iris(file, iris_window, event, do_fit=False):
         int_25 = 0
         int_50 = 1
         int_75 = 2
-        quartiles = get_quartiles.get_quartiles(file, save_window, open_window)
+        quartiles = get_mgii_quartiles.get_quartiles(file, save_window, open_window)
 
         y_size = quartiles.shape[0]
         x_size = quartiles.shape[1]
