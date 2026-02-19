@@ -19,6 +19,7 @@ from iris_fitting import extract_irisL2data
 from scipy.constants import speed_of_light
 import pdb
 
+
 if os.uname().sysname == 'Linux':
     IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
     output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
@@ -818,7 +819,7 @@ def fit_iris(file, iris_window, event, do_fit=False):
         int_25 = 0
         int_50 = 1
         int_75 = 2
-        quartiles = get_mgii_quartiles.get_quartiles(file, save_window, open_window)
+        quartiles = get_mgii_quartiles.get_mgii_quartiles(file, save_window, open_window)
 
         y_size = quartiles.shape[0]
         x_size = quartiles.shape[1]

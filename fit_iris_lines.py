@@ -10,7 +10,7 @@ import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 from multiprocessing import Pool
-#from tqdm import tqdm
+
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.constants import speed_of_light
