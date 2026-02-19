@@ -6,7 +6,7 @@ import glob
 import os
 from iris_fitting.fit_iris_lines import fit_raster
 from iris_fitting import iris_get_mg_features_lv2 as get_mg
-from iris_fitting import get_mgii_quartiles
+from iris_fitting import get_quartiles
 import asdf
 from astropy.io import fits
 import datetime as dt
@@ -819,7 +819,7 @@ def fit_iris(file, iris_window, event, do_fit=False):
         int_25 = 0
         int_50 = 1
         int_75 = 2
-        quartiles = get_mgii_quartiles.get_mgii_quartiles(file, save_window, open_window)
+        quartiles = get_quartiles.get_quartiles(file, save_window, open_window)
 
         y_size = quartiles.shape[0]
         x_size = quartiles.shape[1]
