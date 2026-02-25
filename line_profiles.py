@@ -41,5 +41,7 @@ cube.shape = (nw, ny, nt)
 rest_wavlen = 1393.27 # Angstrom
 
 # Compute centroid
+velocity = np.zeros((cube.shape[1], cube.shape[2]))
+
 
 
