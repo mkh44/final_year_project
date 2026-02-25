@@ -12,6 +12,7 @@ import numpy as np
 from astropy.io import fits
 from fit_iris_lines import fit_raster
 from astropy import units as u
+from astropy.constants import c
 
 # Define event and output location
 event = '20230503_072923'
@@ -43,5 +44,17 @@ rest_wavlen = 1393.27 # Angstrom
 # Compute centroid
 velocity = np.zeros((cube.shape[1], cube.shape[2]))
 
+# Make Doppler map
+for y in range(cube.shape[1]):
+    for t in range(cube.shape[2]):
+
+        spectrum = cube[:, y, t]
+
+        if np.all(np.isnan(spectrum)):
+            velocity[y, t] = np.nan
+            continue
+
+        centroid = np.sum(wavelength * spectrum) / np.sum(spectrum)
+        velocity[y, t] = c * (centroid - rest_wavlen) / rest_wavlen
 
 
