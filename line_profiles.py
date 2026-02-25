@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 from astropy import units as u
+from astropy.wcs import WCS
 from scipy.constants import c
 import matplotlib.pyplot as plt
 
@@ -19,16 +20,23 @@ event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
 
 # Load FITS file
-fits_file = glob.glob(os.path.join(output_loc, "*.fits"))[0]
+fits_file = glob.glob(os.path.join(output_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 # Compute Doppler shifts from spectral cube
 hdul = fits.open(fits_file)
-cube = hdul[4].data.astype(np.float32)
-header = hdul[4].header
+header = hdul[0].header
+print('Window. Name      : wave start - wave end\n')
+for i in range(header['NWIN']):
+    win = str(i + 1)
+    print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
+          ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
 
+data = hdul[5].data
+wcs = WCS(hdul[1].header)
 
 # GET DIMENSIONS
-nw, ny, nt = cube.shape
+nw, ny, nt = data.shape
+print(data.shape)
 
 # Solar y axis
 crval_y = header['CRVAL2']
@@ -60,9 +68,9 @@ rest_wavlen = 1403 # Angstrom
 y_plot = 100
 t_plot = 50
 
-spectrum = cube[:, y_plot, t_plot]
+spectrum = data[:, y_plot, t_plot]
 
-print(wavelength.min(), wavelength.max())
+#pdb.set_trace()
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
 plt.plot(wavelength, spectrum,
