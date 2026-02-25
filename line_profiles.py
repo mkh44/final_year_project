@@ -8,7 +8,7 @@ import pdb
 import glob
 import os
 import matplotlib.pyplot as plt
-import numpy as np
+from numpy import arange
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
@@ -24,15 +24,15 @@ fits_file = glob.glob(os.path.join(output_loc, "iris_l2_20230503_072923_42047001
 
 # Compute Doppler shifts from spectral cube
 hdul = fits.open(fits_file)
-header = hdul[0].header
-print('Window. Name      : wave start - wave end\n')
-for i in range(header['NWIN']):
-    win = str(i + 1)
-    print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
-          ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
+
+# print('Window. Name      : wave start - wave end\n')
+# for i in range(header['NWIN']):
+#     win = str(i + 1)
+#     print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
+#           ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
 
 data = hdul[5].data
-wcs = WCS(hdul[1].header)
+header = hdul[5].header
 
 # GET DIMENSIONS
 nw, ny, nt = data.shape
@@ -43,14 +43,14 @@ crval_y = header['CRVAL2']
 cdelt_y = header['CDELT2']
 crpix_y = header['CRPIX2']
 
-y_arcsec = crval_y + (np.arange(ny) - (crpix_y - 1)) * cdelt_y
+y_arcsec = crval_y + (arange(ny) - (crpix_y - 1)) * cdelt_y
 
 # Time axis
 crval_t = header['CRVAL3']
 cdelt_t = header['CDELT3']
 crpix_t = header['CRPIX3']
 
-time_sec = crval_t + (np.arange(nt) - (crpix_t - 1)) * cdelt_t
+time_sec = crval_t + (arange(nt) - (crpix_t - 1)) * cdelt_t
 # Bulid wavelength axis
 crval = header['CRVAL1']
 cdelt = header['CDELT1']
@@ -59,24 +59,23 @@ crpix = header['CRPIX1']
 y_chosen = 240
 t_chosen = 7000
 
-wavelength = crval + (np.arange(nw) - (crpix -1)) * cdelt
-# Compute Doppler velocity using centroid
-# Choose rest wavelength (Si IV for now)
-rest_wavlen = 1403 # Angstrom
+wavelength = crval + (arange(nw) - (crpix - 1)) * cdelt
 
 # Make Doppler map
-y_plot = 100
-t_plot = 50
+y_plot = 202
+t_plot = 321
+
 
 spectrum = data[:, y_plot, t_plot]
 
 #pdb.set_trace()
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
+fits.
 plt.plot(wavelength, spectrum,
          label=f"y={y_arcsec[y_plot]:.1f}\"  "
                f"t={time_sec[t_plot]:.1f}s  ")
-plt.xlim(1402, 1404)
+#plt.xlim(1402, 1404)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
 plt.legend()
