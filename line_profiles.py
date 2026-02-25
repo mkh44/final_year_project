@@ -4,7 +4,7 @@
 # **Notebook to fit IRIS data using multiple cores**
 
 # %%#
-
+import pdb
 import glob
 import os
 import matplotlib.pyplot as plt
@@ -26,56 +26,51 @@ hdul = fits.open(fits_file)
 cube = hdul[4].data.astype(np.float32)
 header = hdul[4].header
 
+
+# GET DIMENSIONS
+nw, ny, nt = cube.shape
+
+# Solar y axis
+crval_y = header['CRVAL2']
+cdelt_y = header['CDELT2']
+crpix_y = header['CRPIX2']
+
+y_arcsec = crval_y + (np.arange(ny) - (crpix_y - 1)) * cdelt_y
+
+# Time axis
+crval_t = header['CRVAL3']
+cdelt_t = header['CDELT3']
+crpix_t = header['CRPIX3']
+
+time_sec = crval_t + (np.arange(nt) - (crpix_t - 1)) * cdelt_t
 # Bulid wavelength axis
 crval = header['CRVAL1']
 cdelt = header['CDELT1']
 crpix = header['CRPIX1']
 
-nw = cube.shape[0]
+y_chosen = 240
+t_chosen = 7000
 
 wavelength = crval + (np.arange(nw) - (crpix -1)) * cdelt
-
-nw, ny, nt = cube.shape
-
 # Compute Doppler velocity using centroid
 # Choose rest wavelength (Si IV for now)
-rest_wavlen = 1393.27 # Angstrom
-window = 2 # Angstrom
-wl_min = rest_wavlen - window/2
-wl_max = rest_wavlen + window/2
-
-# Refine wavelength
-wl_mask = (wavelength >= wl_min) & (wavelength <= wl_max)
-wl_short = wavelength[wl_mask]
+rest_wavlen = 1403 # Angstrom
 
 # Make Doppler map
-y_plot = cube.shape[1] // 2  # middle row
-t_plot = cube.shape[2] // 2  # middle time
+y_plot = 100
+t_plot = 50
 
 spectrum = cube[:, y_plot, t_plot]
-centroid = np.sum(wavelength * spectrum) / np.sum(spectrum)
-velocity_pixel = c * (centroid - rest_wavlen) / rest_wavlen
 
-# Only consider positive emission for centroid
-spectrum_pos = np.clip(spectrum, a_min=0, a_max=None)  # set negatives to zero
-
-spectrum_short = spectrum_pos[wl_mask]
-
-# Compute Dopper Centroid
-if np.sum(spectrum_short) > 0:
-    centroid = np.sum(wl_short * spectrum_short) / np.sum(spectrum_short)
-    velocity_pixel = c * (centroid - rest_wavlen) / rest_wavlen / 1000  # km/s
-else:
-    centroid = np.nan
-    velocity_pixel = np.nan
-
-
+print(wavelength.min(), wavelength.max())
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
-plt.plot(wl_short, spectrum_short,
-         label=f"y={y_plot}, t={t_plot}, v={velocity_pixel:.1f} km/s")
+plt.plot(wavelength, spectrum,
+         label=f"y={y_arcsec[y_plot]:.1f}\"  "
+               f"t={time_sec[t_plot]:.1f}s  ")
+plt.xlim(1402, 1404)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
 plt.legend()
-
 plt.show()
+
