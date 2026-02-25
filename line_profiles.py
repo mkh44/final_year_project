@@ -10,16 +10,16 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
-from fit_iris_lines import fit_raster
 from astropy import units as u
-from astropy.constants import c
+from scipy.constants import c
+import matplotlib.pyplot as plt
 
 # Define event and output location
 event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
 
 # Load FITS file
-fits_file = glob.glob(os.path.join(output_loc, "*.fits"))
+fits_file = glob.glob(os.path.join(output_loc, "*.fits"))[0]
 
 # Compute Doppler shifts from spectral cube
 hdul = fits.open(fits_file)
@@ -35,7 +35,7 @@ nw = cube.shape[0]
 
 wavelength = crval + (np.arange(nw) - (crpix -1)) * cdelt
 
-cube.shape = (nw, ny, nt)
+nw, ny, nt = cube.shape
 
 # Compute Doppler velocity using centroid
 # Choose rest wavelength (Si IV for now)
@@ -58,3 +58,28 @@ for y in range(cube.shape[1]):
         velocity[y, t] = c * (centroid - rest_wavlen) / rest_wavlen
 
 
+# Find fastest redshift pixels
+flat_indices = np.argsort(velocity.flatten())[::-1]
+
+# Get top N redshift pixels
+N = 10
+
+indices = np.unravel_index(flat_indices[:N], velocity.shape)
+
+y_indices = indices[0]
+t_indices = indices[1]
+
+# Plot spectral profiles
+plt.figure(figsize=(8,6))
+
+for y, t in zip(y_indices, t_indices):
+    spectrum = cube[:, y, t]
+
+    plt.plot(wavelength, spectrum,
+             label=f"y={y}, t={t}, v={velocity[y, t]:.1f} km/s")
+    plt.xlabel("Wavelength (Å)")
+    plt.ylabel("Intensity")
+    plt.legend()
+    plt.title("Fastest redshifted pixels")
+
+    plt.show()
