@@ -7,8 +7,7 @@
 import pdb
 import glob
 import os
-import matplotlib.pyplot as plt
-from numpy import arange
+import numpy as np
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
@@ -30,52 +29,28 @@ hdul = fits.open(fits_file)
 #     win = str(i + 1)
 #     print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
 #           ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
+header = hdul[1].header
+print(hdul[0].header)
 
-data = hdul[5].data
-header = hdul[5].header
-
-# GET DIMENSIONS
-nw, ny, nt = data.shape
-print(data.shape)
-
-# Solar y axis
-crval_y = header['CRVAL2']
-cdelt_y = header['CDELT2']
-crpix_y = header['CRPIX2']
-
-y_arcsec = crval_y + (arange(ny) - (crpix_y - 1)) * cdelt_y
-
-# Time axis
-crval_t = header['CRVAL3']
-cdelt_t = header['CDELT3']
-crpix_t = header['CRPIX3']
-
-time_sec = crval_t + (arange(nt) - (crpix_t - 1)) * cdelt_t
-# Bulid wavelength axis
 crval = header['CRVAL1']
 cdelt = header['CDELT1']
 crpix = header['CRPIX1']
 
-y_chosen = 240
-t_chosen = 7000
+start_t = hdul[0].header['STARTOBS']
+print(start_t)
 
-wavelength = crval + (arange(nw) - (crpix - 1)) * cdelt
+#wcs = WCS(hdul[5].header)
+nwave = hdul[1].data.shape[2]
+wavelength = crval + (np.arange(nwave) -(crpix-1)) * cdelt
+print(nwave)
+print(wavelength)
 
-# Make Doppler map
-y_plot = 202
-t_plot = 321
-
-
-spectrum = data[:, y_plot, t_plot]
 
 #pdb.set_trace()
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
-fits.
-plt.plot(wavelength, spectrum,
-         label=f"y={y_arcsec[y_plot]:.1f}\"  "
-               f"t={time_sec[t_plot]:.1f}s  ")
-#plt.xlim(1402, 1404)
+plt.plot(wavelength, hdul[1].data[100, 200])
+plt.ylim(-10, 15)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
 plt.legend()
