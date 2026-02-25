@@ -40,7 +40,7 @@ nw, ny, nt = cube.shape
 # Compute Doppler velocity using centroid
 # Choose rest wavelength (Si IV for now)
 rest_wavlen = 1393.27 # Angstrom
-window = 3 # Angstrom
+window = 2 # Angstrom
 wl_min = rest_wavlen - window/2
 wl_max = rest_wavlen + window/2
 
@@ -48,29 +48,32 @@ wl_max = rest_wavlen + window/2
 wl_mask = (wavelength >= wl_min) & (wavelength <= wl_max)
 wl_short = wavelength[wl_mask]
 
-# Compute centroid
-velocity = np.zeros((cube.shape[1], cube.shape[2]))
-
 # Make Doppler map
-for y in range(cube.shape[1]):
-    for t in range(cube.shape[2]):
+y_plot = cube.shape[1] // 2  # middle row
+t_plot = cube.shape[2] // 2  # middle time
 
-        spectrum = cube[:, y, t]
+spectrum = cube[:, y_plot, t_plot]
+centroid = np.sum(wavelength * spectrum) / np.sum(spectrum)
+velocity_pixel = c * (centroid - rest_wavlen) / rest_wavlen
 
-        if np.all(np.isnan(spectrum)):
-            velocity[y, t] = np.nan
-            continue
+# Only consider positive emission for centroid
+spectrum_pos = np.clip(spectrum, a_min=0, a_max=None)  # set negatives to zero
 
-        centroid = np.sum(wavelength * spectrum) / np.sum(spectrum)
-        velocity[y, t] = c * (centroid - rest_wavlen) / rest_wavlen
+spectrum_short = spectrum_pos[wl_mask]
 
+# Compute Dopper Centroid
+if np.sum(spectrum_short) > 0:
+    centroid = np.sum(wl_short * spectrum_short) / np.sum(spectrum_short)
+    velocity_pixel = c * (centroid - rest_wavlen) / rest_wavlen / 1000  # km/s
+else:
+    centroid = np.nan
+    velocity_pixel = np.nan
 
 
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
-spectrum_short = cube[:, y, t][wl_mask]
 plt.plot(wl_short, spectrum_short,
-         label=f"y={y}, t={t}, v={velocity[y, t]:.1f} km/s")
+         label=f"y={y_plot}, t={t_plot}, v={velocity_pixel:.1f} km/s")
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
 plt.legend()
