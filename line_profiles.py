@@ -29,8 +29,8 @@ hdul = fits.open(fits_file)
 #     win = str(i + 1)
 #     print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
 #           ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
-header = hdul[1].header
-print(hdul[0].header)
+header = hdul[5].header
+#print(hdul[0].header)
 
 crval = header['CRVAL1']
 cdelt = header['CDELT1']
@@ -40,17 +40,19 @@ start_t = hdul[0].header['STARTOBS']
 print(start_t)
 
 #wcs = WCS(hdul[5].header)
-nwave = hdul[1].data.shape[2]
-wavelength = crval + (np.arange(nwave) -(crpix-1)) * cdelt
+nwave = hdul[5].data.shape[2]
 print(nwave)
+wavelength = crval + (np.arange(nwave) -(crpix-1)) * cdelt
 print(wavelength)
-
-
+data_arr = hdul[5].data
+print(data_arr.shape)
+# wavelen to velocity (dopp shift strong 1st line)
+#only interested in >0 so set anything <0 equal to zero
 #pdb.set_trace()
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
-plt.plot(wavelength, hdul[1].data[100, 200])
-plt.ylim(-10, 15)
+plt.plot(wavelength, data_arr[11850, 100])
+plt.ylim(0, 100)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
 plt.legend()
