@@ -21,40 +21,48 @@ output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University persona
 # Load FITS file
 fits_file = glob.glob(os.path.join(output_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
+line = 1
+time_y = 12000
+
 # Compute Doppler shifts from spectral cube
 hdul = fits.open(fits_file)
 
+hdr = hdul[0].header
 # print('Window. Name      : wave start - wave end\n')
-# for i in range(header['NWIN']):
+# for i in range(hdr['NWIN']):
 #     win = str(i + 1)
 #     print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
-#           ''.format(win, header['TDESC' + win], header['TWMIN' + win], header['TWMAX' + win]))
-header = hdul[5].header
+#            ''.format(win, hdr['TDESC' + win], hdr['TWMIN' + win], hdr['TWMAX' + win]))
+print(hdr['TDESC'])
 #print(hdul[0].header)
 
+
+header = hdul[line].header
+#print(header)
+#window = header['NWIN']
 crval = header['CRVAL1']
 cdelt = header['CDELT1']
 crpix = header['CRPIX1']
 
+#print(window)
 start_t = hdul[0].header['STARTOBS']
 print(start_t)
 
 #wcs = WCS(hdul[5].header)
-nwave = hdul[5].data.shape[2]
-print(nwave)
+nwave = hdul[line].data.shape[2]
 wavelength = crval + (np.arange(nwave) -(crpix-1)) * cdelt
-print(wavelength)
-data_arr = hdul[5].data
+#print(wavelength)
+data_arr = hdul[line].data
 print(data_arr.shape)
 # wavelen to velocity (dopp shift strong 1st line)
 #only interested in >0 so set anything <0 equal to zero
 #pdb.set_trace()
 # Plot spectral profiles
 plt.figure(figsize=(8, 6))
-plt.plot(wavelength, data_arr[11850, 100])
+plt.plot(wavelength, data_arr[time_y, 100])
 plt.ylim(0, 100)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
-plt.legend()
+plt.title(f'Line: {window}, time = {time_y}')
 plt.show()
 
