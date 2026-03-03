@@ -26,11 +26,12 @@ output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University persona
 fits_file = glob.glob(os.path.join(output_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 lines = [5, 1, 9]
-time_y = 12000
+time_x = 12000
+height = 100
 
 hdul = fits.open(fits_file)
 
-def line_profile(lines, time_y):
+def line_profile(lines, time_x):
     hdr = hdul[0].header
 
     si_title = hdr['TDESC' + str(lines[0])]
@@ -63,26 +64,31 @@ def line_profile(lines, time_y):
 
 
     plt.figure(figsize=(8, 6))
-    plt.ylim(0, 100)
-    plt.xlabel("Wavelength (Å)")
-    plt.ylabel("Intensity")
-
     fig, ax = plt.subplots(3,1)
+    ax[0].plot(si_wavelength, si_data_arr[time_x, height])
+    ax[0].set_xlabel(' ')
+    ax[0].set_ylabel(' ')
+    ax[0].set_ylim(0, 200)
 
-    ax[0].plot(si_wavelength, si_data_arr[time_y, 100])
-    ax[0].set_ylabel(f'{si_title}')
 
-    ax[1].plot(cii_wavelength, cii_data_arr[time_y, 100])
-    ax[1].set_ylabel(f'{cii_title}')
+    ax[1].plot(cii_wavelength, cii_data_arr[time_x, height])
+    ax[1].set_xlabel(' ')
+    ax[1].set_ylabel("Intensity")
+    ax[1].set_ylim(0, 200)
 
-    ax[2].plot(mg_wavelength, mg_data_arr[time_y, 100])
-    ax[2].set_ylabel(f'{mg_title}')
+    ax[2].plot(mg_wavelength, mg_data_arr[time_x, height])
+    ax[2].set_ylabel(' ')
+    ax[2].set_xlabel('Wavelength (Å)')
+    ax[2].set_ylim(0, 200)
+    ax2r = ax[2].twiny()
+    ax2r.set_ylabel(f'{mg_title}')
+    ax2r.set_yticklabels([])
 
-    plt.suptitle(f'time: {time_y}')
+    plt.suptitle(f'time: {time_x} s')
     plt.show()
 
 
-line_profile(lines, time_y)
+line_profile(lines, time_x)
 # wavelen to velocity (dopp shift strong 1st line)
 #only interested in >0 so set anything <0 equal to zero
 #pdb.set_trace()
