@@ -33,7 +33,8 @@ hdr = hdul[0].header
 #     win = str(i + 1)
 #     print('{0}. {1:15}: {2:.2f} - {3:.2f} Å'
 #            ''.format(win, hdr['TDESC' + win], hdr['TWMIN' + win], hdr['TWMAX' + win]))
-print(hdr['TDESC'])
+window = hdr['TDESC' + str(line)]
+print(window)
 #print(hdul[0].header)
 
 
@@ -63,6 +64,6 @@ plt.plot(wavelength, data_arr[time_y, 100])
 plt.ylim(0, 100)
 plt.xlabel("Wavelength (Å)")
 plt.ylabel("Intensity")
-plt.title(f'Line: {window}, time = {time_y}')
+plt.title(f'{window}, time: {time_y}')
 plt.show()
 
