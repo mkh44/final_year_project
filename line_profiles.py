@@ -65,10 +65,11 @@ def line_profile(lines, time_x):
 
     plt.figure(figsize=(8, 6))
     fig, ax = plt.subplots(3,1)
-    ax[0].plot(si_wavelength, si_data_arr[time_x, height])
+    ax[0].plot(si_wavelength, si_data_arr[time_x, height], label = '(a)')
     ax[0].set_xlabel(' ')
-    ax[0].set_ylabel(' ')
+    ax[0].set_ylabel(f'{si_title}')
     ax[0].set_ylim(0, 200)
+
 
 
     ax[1].plot(cii_wavelength, cii_data_arr[time_x, height])
@@ -80,11 +81,9 @@ def line_profile(lines, time_x):
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Wavelength (Å)')
     ax[2].set_ylim(0, 200)
-    ax2r = ax[2].twiny()
-    ax2r.set_ylabel(f'{mg_title}')
-    ax2r.set_yticklabels([])
+    plt.colorbar
 
-    plt.suptitle(f'time: {time_x} s')
+    plt.suptitle(f'Time: {time_x} s')
     plt.show()
 
 
