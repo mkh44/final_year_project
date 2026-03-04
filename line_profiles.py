@@ -114,7 +114,7 @@ def line_profile(lines, time_x):
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
     plt.suptitle(f'Time: {time_x} s')
-    save_path = os.path.join(output_loc, f"Doppler_Profiles_{time_x}s.png")
+    save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
@@ -151,8 +151,8 @@ def line_profile(lines, time_x):
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
     plt.suptitle(f'Time: {time_x} s')
-    save_path = os.path.join(output_loc, f"Wavelength_Profiles_{time_x}s.png")
-    plt.savefig(save_path, bbox_inches='tight')
+    save_path = os.path.join(output_loc, f"wavelength_profiles_{time_x}s.png")
+    #plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
 
