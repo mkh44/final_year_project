@@ -88,6 +88,8 @@ def line_profile(lines, time_x):
     ax0.set_yticks([])
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
+    si_vmax = np.max(np.abs(si_v_dopp))
+    ax[0].set_xlim(-500, 500)
 
     ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
@@ -97,15 +99,19 @@ def line_profile(lines, time_x):
     ax1.set_yticks([])
     ax1.set_yticklabels([])
     ax1.set_ylabel(f'{cii_title}')
+    cii_vmax = np.max(np.abs(cii_v_dopp))
+    ax[1].set_xlim(-500, 500)
 
     ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Doppler Velocity (km/s)')
-    ax[2].set_ylim(0, 200)
+    ax[2].set_ylim(0, 210)
     ax2 = ax[2].twinx()
     ax2.set_yticks([])
     ax2.set_yticklabels([])
     ax2.set_ylabel(f'{mg_title}')
+    mg_vmax = np.max(np.abs(mg_v_dopp))
+    ax[2].set_xlim(-500, 500)
 
 
     plt.suptitle(f'Time: {time_x} s')
