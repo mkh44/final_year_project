@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 import numpy as np
 from tqdm import tqdm
 from astropy.io import fits
-from iris_fitting import extract_irisL2data
+import extract_irisL2data
 from astropy.wcs import WCS
 import pdb
 
