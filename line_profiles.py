@@ -14,6 +14,8 @@ from astropy.wcs import WCS
 from matplotlib.pyplot import twiny
 from scipy.constants import c
 import matplotlib.pyplot as plt
+from get_quartiles import get_quartiles
+from fit_iris_lines import get_line_references
 
 # #print(window)
 # start_t = hdul[0].header['STARTOBS']
@@ -49,10 +51,17 @@ def line_profile(lines, time_x):
 
     # Doppler velocity
     # We're going to take the average median of the datacube as the rest wavelength in the region of interest
-    wvl_ref = np.mean(line_pos)
-    ref_wave = np.full((y_size, x_size), wvl_ref)
-    v_dopp = ((line_pos - ref_wave) / (ref_wave)) * (speed_of_light / 1e3)
+    # Give the rest wavelength to get an estimate of where the line is
+    quartiles_mg = get_quartiles(fits_file, 'Si IV 1403', 'Si IV 1403')
 
+    si_y_size = quartiles_mg.shape[0]
+    si_x_size = quartiles_mg.shape[1]
+    si_line_pos = quartiles_mg[:, :, 1]
+
+    si_wvl_ref = np.mean(si_line_pos)
+    si_ref_wave = np.full((si_y_size, si_x_size), si_wvl_ref)
+    v_dopp = ((si_line_pos - si_ref_wave) / si_ref_wave) * (2.99e8 / 1e3) #km/s
+    print(si_y_size, si_x_size, si_line_pos, si_wvl_ref, si_ref_wave, v_dopp)
 
     cii_header = hdul[lines[1]].header
     cii_crval = cii_header['CRVAL1']
