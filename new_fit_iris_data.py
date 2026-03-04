@@ -4,9 +4,10 @@
 # %%
 import glob
 import os
+from iris_fitting import fit_iris_lines
 from fit_iris_lines import fit_raster
-import iris_get_mg_features_lv2 as get_mg
-import get_quartiles
+from iris_fitting import iris_get_mg_features_lv2 as get_mg
+from iris_fitting import get_quartiles
 import asdf
 from astropy.io import fits
 import datetime as dt
@@ -15,17 +16,17 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
-import extract_irisL2data
+from iris_fitting import extract_irisL2data
 from scipy.constants import speed_of_light
 import pdb
 
 
 if os.uname().sysname == 'Linux':
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
+    IRIS_data_loc = '/mnt/data/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/mnt/data/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
-    IRIS_data_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/mnt/nas/ug/hurlem24/iris_data/iris_output/iris_output/'
+    IRIS_data_loc = '/mnt/data/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/mnt/data/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 
 # Plot the output of the fitting routine

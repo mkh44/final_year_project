@@ -27,7 +27,7 @@ input_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal
 fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 lines = [5, 1, 9]
-time_x = 12000
+time_x = 11000
 height = 100
 y_lim = 210
 x_lim = 200
