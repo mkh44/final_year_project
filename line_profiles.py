@@ -27,10 +27,10 @@ input_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal
 fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 lines = [5, 1, 9]
-time_x = 7000
+time_x = 12000
 height = 100
-y_lim = 75
-x_lim = 200
+y_lim = 210
+x_lim = 400
 
 hdul = fits.open(fits_file)
 
@@ -90,6 +90,7 @@ def line_profile(lines, time_x):
     ax0.set_ylabel(f'{si_title}')
     ax[0].set_xlim(-x_lim, x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
+    plt.axvline(x=0, color='k', linestyle='dashed', linewidth=1)
 
     ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
@@ -101,6 +102,7 @@ def line_profile(lines, time_x):
     ax1.set_ylabel(f'{cii_title}')
     ax[1].set_xlim(-x_lim, x_lim)
     ax[1].xaxis.set_minor_locator(MultipleLocator(10))
+    plt.axvline(x=0, color='k', linestyle='dashed', linewidth=1)
 
     ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
     ax[2].set_ylabel(' ')
@@ -112,6 +114,7 @@ def line_profile(lines, time_x):
     ax2.set_ylabel(f'{mg_title}')
     ax[2].set_xlim(-x_lim, x_lim)
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
+    plt.axvline(x=0, color='k', linestyle='dashed', linewidth=1)
 
     plt.suptitle(f'Time: {time_x} s')
     save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s.png")
