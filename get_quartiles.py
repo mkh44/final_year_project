@@ -135,3 +135,4 @@ def get_quartiles(file, line_wvl, iris_window, fulldisk=False):
     quartiles = res.astype(np.float32)
 
     return quartiles*A_to_nm
+

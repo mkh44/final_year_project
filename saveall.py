@@ -6,8 +6,8 @@
 import traceback
 import joblib
 import os.path
-from iris_fitting import saveall as sv
-from iris_fitting import find 
+import saveall as sv
+import find
 
 #def save(filename_jbl, *list_var):
 def save(filename_jbl, *list_var, force=False, verbose=True,

@@ -37,10 +37,12 @@ hdul = fits.open(fits_file)
 def line_profile(lines, time_x):
     hdr = hdul[0].header
 
+    # Get line names
     si_title = hdr['TDESC' + str(lines[0])]
     cii_title = hdr['TDESC' + str(lines[1])]
     mg_title = hdr['TDESC' + str(lines[2])]
 
+    # Get Si IV properties
     si_header = hdul[lines[0]].header
     si_crval = si_header['CRVAL1']
     si_cdelt = si_header['CDELT1']
@@ -49,20 +51,7 @@ def line_profile(lines, time_x):
     si_wavelength = si_crval + (np.arange(si_wave) - (si_crpix - 1)) * si_cdelt
     si_data_arr = hdul[lines[0]].data
 
-    # Doppler velocity
-    # We're going to take the average median of the datacube as the rest wavelength in the region of interest
-    # Give the rest wavelength to get an estimate of where the line is
-    quartiles_mg = get_quartiles(fits_file, 'Si IV 1403', 'Si IV 1403')
-
-    si_y_size = quartiles_mg.shape[0]
-    si_x_size = quartiles_mg.shape[1]
-    si_line_pos = quartiles_mg[:, :, 1]
-
-    si_wvl_ref = np.mean(si_line_pos)
-    si_ref_wave = np.full((si_y_size, si_x_size), si_wvl_ref)
-    v_dopp = ((si_line_pos - si_ref_wave) / si_ref_wave) * (2.99e8 / 1e3) #km/s
-    print(si_y_size, si_x_size, si_line_pos, si_wvl_ref, si_ref_wave, v_dopp)
-
+    # Get Cii properties
     cii_header = hdul[lines[1]].header
     cii_crval = cii_header['CRVAL1']
     cii_cdelt = cii_header['CDELT1']
@@ -71,18 +60,28 @@ def line_profile(lines, time_x):
     cii_wavelength = cii_crval + (np.arange(cii_wave) - (cii_crpix - 1)) * cii_cdelt
     cii_data_arr = hdul[lines[1]].data
 
+    # Get mg properties
     mg_header = hdul[lines[2]].header
     mg_crval = mg_header['CRVAL1']
     mg_cdelt = mg_header['CDELT1']
     mg_crpix = mg_header['CRPIX1']
     mg_wave = hdul[lines[2]].data.shape[2]
-    mg_wavelength = mg_crval + (np.arange(mg_wave) - (si_crpix - 1)) * mg_cdelt
+    mg_wavelength = mg_crval + (np.arange(mg_wave) - (mg_crpix - 1)) * mg_cdelt
     mg_data_arr = hdul[lines[2]].data
 
+    # Doppler velocities
+    lambda_si = 1402.8
+    si_v_dopp = ((si_wavelength - lambda_si) / lambda_si) * (c / 1e3)
+
+    lambda_cii = 1335.7
+    cii_v_dopp = ((cii_wavelength - lambda_cii) / lambda_cii) * (c / 1e3)
+
+    lambda_mg = 2795.5
+    mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
 
     plt.figure(figsize=(8, 6))
-    fig, ax = plt.subplots(3,1)
-    ax[0].plot(si_wavelength, si_data_arr[time_x, height], color='k')
+    fig, ax = plt.subplots(3, 1)
+    ax[0].plot(si_v_dopp, si_data_arr[time_x, height], color='k')
     ax[0].set_xlabel(' ')
     ax[0].set_ylim(0, 200)
     ax0 = ax[0].twinx()
@@ -90,7 +89,7 @@ def line_profile(lines, time_x):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
 
-    ax[1].plot(cii_wavelength, cii_data_arr[time_x, height], color='k')
+    ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
     ax[1].set_ylabel("Intensity")
     ax[1].set_ylim(0, 200)
@@ -99,9 +98,9 @@ def line_profile(lines, time_x):
     ax1.set_yticklabels([])
     ax1.set_ylabel(f'{cii_title}')
 
-    ax[2].plot(mg_wavelength, mg_data_arr[time_x, height], color='k')
+    ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
     ax[2].set_ylabel(' ')
-    ax[2].set_xlabel('Wavelength (Å)')
+    ax[2].set_xlabel('Doppler Velocity (km/s)')
     ax[2].set_ylim(0, 200)
     ax2 = ax[2].twinx()
     ax2.set_yticks([])
