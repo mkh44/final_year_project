@@ -30,7 +30,7 @@ lines = [5, 1, 9]
 time_x = 12000
 height = 100
 y_lim = 210
-x_lim = 400
+x_lim = 200
 
 hdul = fits.open(fits_file)
 
