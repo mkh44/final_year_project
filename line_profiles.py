@@ -47,6 +47,13 @@ def line_profile(lines, time_x):
     si_wavelength = si_crval + (np.arange(si_wave) - (si_crpix - 1)) * si_cdelt
     si_data_arr = hdul[lines[0]].data
 
+    # Doppler velocity
+    # We're going to take the average median of the datacube as the rest wavelength in the region of interest
+    wvl_ref = np.mean(line_pos)
+    ref_wave = np.full((y_size, x_size), wvl_ref)
+    v_dopp = ((line_pos - ref_wave) / (ref_wave)) * (speed_of_light / 1e3)
+
+
     cii_header = hdul[lines[1]].header
     cii_crval = cii_header['CRVAL1']
     cii_cdelt = cii_header['CDELT1']
