@@ -276,7 +276,7 @@ def fit_asym(self, data_array, wavelength, fit_array, ncores):
 
     # Create a delayed task for each (y, x) spectrum (numpy style)
     with Pool(processes=ncores) as pool:
-        results = list(pool.imap(self.get_bluewing_asym, tasks), total=len(tasks), desc="Calculating blue-wing asymmetries")
+        results = list(pool.imap(self.get_bluewing_asym, tasks))
 
     # Reshape the results back into the (y, x) shape
     res = np.array([result for result in results], dtype='object').reshape(y_size, x_size)
