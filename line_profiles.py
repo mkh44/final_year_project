@@ -11,6 +11,7 @@ import numpy as np
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
+from matplotlib.pyplot import twiny
 from scipy.constants import c
 import matplotlib.pyplot as plt
 
@@ -65,23 +66,32 @@ def line_profile(lines, time_x):
 
     plt.figure(figsize=(8, 6))
     fig, ax = plt.subplots(3,1)
-    ax[0].plot(si_wavelength, si_data_arr[time_x, height], label = '(a)')
+    ax[0].plot(si_wavelength, si_data_arr[time_x, height], color='k')
     ax[0].set_xlabel(' ')
-    ax[0].set_ylabel(f'{si_title}')
     ax[0].set_ylim(0, 200)
+    ax0 = ax[0].twinx()
+    ax0.set_yticks([])
+    ax0.set_yticklabels([])
+    ax0.set_ylabel(f'{si_title}')
 
-
-
-    ax[1].plot(cii_wavelength, cii_data_arr[time_x, height])
+    ax[1].plot(cii_wavelength, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
     ax[1].set_ylabel("Intensity")
     ax[1].set_ylim(0, 200)
+    ax1 = ax[1].twinx()
+    ax1.set_yticks([])
+    ax1.set_yticklabels([])
+    ax1.set_ylabel(f'{cii_title}')
 
-    ax[2].plot(mg_wavelength, mg_data_arr[time_x, height])
+    ax[2].plot(mg_wavelength, mg_data_arr[time_x, height], color='k')
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Wavelength (Å)')
     ax[2].set_ylim(0, 200)
-    plt.colorbar
+    ax2 = ax[2].twinx()
+    ax2.set_yticks([])
+    ax2.set_yticklabels([])
+    ax2.set_ylabel(f'{mg_title}')
+
 
     plt.suptitle(f'Time: {time_x} s')
     plt.show()
