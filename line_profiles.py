@@ -91,6 +91,7 @@ def line_profile(lines, time_x):
     ax[0].set_xlim(-x_lim, x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
     plt.axvline(x=0, color='k', linestyle='dashed', linewidth=1)
+    plt.title(f'Time: {time_x} s', loc='right')
 
     ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
@@ -116,7 +117,7 @@ def line_profile(lines, time_x):
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
     plt.axvline(x=0, color='k', linestyle='dashed', linewidth=1)
 
-    plt.suptitle(f'Time: {time_x} s')
+
     save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
@@ -132,6 +133,7 @@ def line_profile(lines, time_x):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
+    plt.title(f'Time: {time_x} s', loc='right')
 
     ax[1].plot(cii_wavelength, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
@@ -153,7 +155,7 @@ def line_profile(lines, time_x):
     ax2.set_ylabel(f'{mg_title}')
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
-    plt.suptitle(f'Time: {time_x} s')
+
     save_path = os.path.join(output_loc, f"wavelength_profiles_{time_x}s.png")
     #plt.savefig(save_path, bbox_inches='tight')
     plt.show()
