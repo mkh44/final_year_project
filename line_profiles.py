@@ -16,11 +16,8 @@ from scipy.constants import c
 import matplotlib.pyplot as plt
 from get_quartiles import get_quartiles
 from fit_iris_lines import get_line_references
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 
-# #print(window)
-# start_t = hdul[0].header['STARTOBS']
-# print(start_t)
-# Define event and output location
 
 event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
@@ -29,8 +26,10 @@ output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University persona
 fits_file = glob.glob(os.path.join(output_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 lines = [5, 1, 9]
-time_x = 12000
+time_x = 7000
 height = 100
+y_lim = 210
+x_lim = 200
 
 hdul = fits.open(fits_file)
 
@@ -79,49 +78,48 @@ def line_profile(lines, time_x):
     lambda_mg = 2795.5
     mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
 
+    # Plotting
     plt.figure(figsize=(8, 6))
     fig, ax = plt.subplots(3, 1)
     ax[0].plot(si_v_dopp, si_data_arr[time_x, height], color='k')
     ax[0].set_xlabel(' ')
-    ax[0].set_ylim(0, 200)
+    ax[0].set_ylim(0, y_lim)
     ax0 = ax[0].twinx()
     ax0.set_yticks([])
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
     si_vmax = np.max(np.abs(si_v_dopp))
-    ax[0].set_xlim(-500, 500)
+    ax[0].set_xlim(-x_lim, x_lim)
+    ax[0].xaxis.set_minor_locator(MultipleLocator(10))
 
     ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].set_xlabel(' ')
     ax[1].set_ylabel("Intensity")
-    ax[1].set_ylim(0, 200)
+    ax[1].set_ylim(0, y_lim)
     ax1 = ax[1].twinx()
     ax1.set_yticks([])
     ax1.set_yticklabels([])
     ax1.set_ylabel(f'{cii_title}')
     cii_vmax = np.max(np.abs(cii_v_dopp))
-    ax[1].set_xlim(-500, 500)
+    ax[1].set_xlim(-x_lim, x_lim)
+    ax[1].xaxis.set_minor_locator(MultipleLocator(10))
 
     ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Doppler Velocity (km/s)')
-    ax[2].set_ylim(0, 210)
+    ax[2].set_ylim(0, y_lim)
     ax2 = ax[2].twinx()
     ax2.set_yticks([])
     ax2.set_yticklabels([])
     ax2.set_ylabel(f'{mg_title}')
     mg_vmax = np.max(np.abs(mg_v_dopp))
-    ax[2].set_xlim(-500, 500)
-
+    ax[2].set_xlim(-x_lim, x_lim)
+    ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
     plt.suptitle(f'Time: {time_x} s')
     plt.show()
 
 
 line_profile(lines, time_x)
-# wavelen to velocity (dopp shift strong 1st line)
-#only interested in >0 so set anything <0 equal to zero
-#pdb.set_trace()
-# Plot spectral profiles
-#
+
 
