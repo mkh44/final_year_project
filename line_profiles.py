@@ -78,19 +78,20 @@ def line_profile(lines, time_x):
 # Plotting Doppler velocity
 
     fig, ax = plt.subplots(3, 1, sharex = True)
-    plt.title(f'Time: {time_x} s', loc='right')
+
 
     # Masks for colour difference on plot
-    si_redshift = si_v_dopp > 0
+    si_redshift = si_v_dopp >= 0
     si_blueshift = si_v_dopp <= 0
 
-    cii_redshift = cii_v_dopp > 0
+    cii_redshift = cii_v_dopp >= 0
     cii_blueshift = cii_v_dopp <= 0
 
-    mg_redshift = mg_v_dopp > 0
+    mg_redshift = mg_v_dopp >= 0
     mg_blueshift = mg_v_dopp <= 0
 
     #Si IV 1403 plot
+    ax[0].plot(si_v_dopp, si_data_arr[time_x, height], color='k')
     ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_x, height][si_redshift], color='red')
     ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_x, height][si_blueshift], color='blue')
 
@@ -100,15 +101,18 @@ def line_profile(lines, time_x):
     ax[0].set_xlim(-x_lim, x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
 
+
     # Second Si IV axis for titles
     ax0 = ax[0].twinx()
     ax0.set_yticks([])
     ax0.set_ylim(0, y_lim)
-    ax0.set_xlim(-x_lim, x_lim)
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
 
+    plt.title(f'Time: {time_x} s', loc='right')
+
     # Cii plot
+    ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
     ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_x, height][cii_redshift], color='red')
     ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_x, height][cii_blueshift], color='blue')
 
@@ -126,6 +130,7 @@ def line_profile(lines, time_x):
     ax1.set_ylabel(f'{cii_title}')
 
     # Mg plot
+    ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
     ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_x, height][mg_redshift], color='red')
     ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_x, height][mg_blueshift], color='blue')
 
