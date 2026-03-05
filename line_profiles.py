@@ -35,11 +35,11 @@ x_lim = 150
 hdul = fits.open(fits_file)
 hdr = hdul[0].header
 
-def get_wavelength(header, line):
+def get_wavelength(header, line_index):
     crval = header['CRVAL1']
     cdelt = header['CDELT1']
     crpix = header['CRPIX1']
-    n_wave = hdul[lines[line]].data.shape[2]
+    n_wave = hdul[lines[line_index]].data.shape[2]
     wavelength = crval + (np.arange(n_wave) - (crpix - 1)) * cdelt
     return wavelength
 
@@ -52,17 +52,17 @@ def line_profile(lines, time_x):
 
     # Get Si IV properties
     si_header = hdul[lines[0]].header
-    si_wavelength = get_wavelength(si_header,lines[0])
+    si_wavelength = get_wavelength(si_header,0)
     si_data_arr = hdul[lines[0]].data
 
     # Get Cii properties
     cii_header = hdul[lines[1]].header
-    cii_wavelength = get_wavelength(cii_header, lines[1])
+    cii_wavelength = get_wavelength(cii_header, 1)
     cii_data_arr = hdul[lines[1]].data
 
     # Get mg properties
     mg_header = hdul[lines[2]].header
-    mg_wavelength = get_wavelength(mg_header, lines[2])
+    mg_wavelength = get_wavelength(mg_header, 2)
     mg_data_arr = hdul[lines[2]].data
 
     # Doppler velocities
@@ -81,12 +81,18 @@ def line_profile(lines, time_x):
     plt.title(f'Time: {time_x} s', loc='right')
 
     # Masks for colour difference on plot
-    redshift = si_v_dopp <= 0
-    blueshift = si_v_dopp > 0
+    si_redshift = si_v_dopp > 0
+    si_blueshift = si_v_dopp <= 0
+
+    cii_redshift = cii_v_dopp > 0
+    cii_blueshift = cii_v_dopp <= 0
+
+    mg_redshift = mg_v_dopp > 0
+    mg_blueshift = mg_v_dopp <= 0
 
     #Si IV 1403 plot
-    ax[0].plot(si_v_dopp[redshift], si_data_arr[time_x, height][redshift], color='red')
-    ax[0].plot(si_v_dopp[blueshift], si_data_arr[time_x, height][blueshift], color='blue')
+    ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_x, height][si_redshift], color='red')
+    ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_x, height][si_blueshift], color='blue')
 
     # Set Si IV axis labels abd tickmarks
     ax[0].set_xlabel(' ')
@@ -103,8 +109,8 @@ def line_profile(lines, time_x):
     ax0.set_ylabel(f'{si_title}')
 
     # Cii plot
-    ax[1].plot(cii_v_dopp[redshift], cii_data_arr[time_x, height][redshift], color='red')
-    ax[1].plot(cii_v_dopp[blueshift], cii_data_arr[time_x, height][blueshift], color='blue')
+    ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_x, height][cii_redshift], color='red')
+    ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_x, height][cii_blueshift], color='blue')
 
     # Set Cii axis limits and labels
     ax[1].set_xlim(-x_lim, x_lim)
@@ -120,8 +126,8 @@ def line_profile(lines, time_x):
     ax1.set_ylabel(f'{cii_title}')
 
     # Mg plot
-    ax[2].plot(mg_v_dopp[redshift], mg_data_arr[time_x, height][redshift], color='red')
-    ax[2].plot(mg_v_dopp[blueshift], mg_data_arr[time_x, height][blueshift], color='blue')
+    ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_x, height][mg_redshift], color='red')
+    ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_x, height][mg_blueshift], color='blue')
 
     # Set Mg axis limits and labels
     ax[2].set_ylabel(' ')
