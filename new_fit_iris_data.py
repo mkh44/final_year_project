@@ -4,8 +4,7 @@
 # %%
 import glob
 import os
-from iris_fitting import fit_iris_lines
-from fit_iris_lines import fit_raster
+from iris_fitting.fit_iris_lines import fit_raster
 from iris_fitting import iris_get_mg_features_lv2 as get_mg
 from iris_fitting import get_quartiles
 import asdf
