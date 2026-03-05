@@ -27,10 +27,10 @@ input_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal
 fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits"))[0]
 
 lines = [5, 1, 9]
-time_x = 7000
+time_x = 12000
 height = 100
-y_lim = 75
-x_lim = 150
+y_lim = 210
+x_lim = 250
 
 hdul = fits.open(fits_file)
 hdr = hdul[0].header
@@ -100,6 +100,7 @@ def line_profile(lines, time_x):
     ax[0].set_ylim(0, y_lim)
     ax[0].set_xlim(-x_lim, x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
+
 
 
     # Second Si IV axis for titles
