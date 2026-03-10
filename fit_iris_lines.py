@@ -5,7 +5,7 @@
 import time
 import warnings
 warnings.filterwarnings('ignore')
-from tqdm import tqdm
+# from tqdm import tqdm
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
@@ -258,7 +258,7 @@ class fit_raster:
 
         # Create a delayed task for each (y, x) spectrum
         with Pool(processes=ncores) as pool:
-            results = list(tqdm(pool.imap(self.fit_spectrum, tasks), total=len(tasks), desc='Fitting IRIS spectra'))
+            results = list(pool.imap(self.fit_spectrum, tasks), total=len(tasks), desc='Fitting IRIS spectra')
 
         # Reshape the results back into the (y, x, 8) shape (numpy style)
         res = np.array([result for result in results], dtype='object').reshape(y_size, x_size, 8)
@@ -276,7 +276,7 @@ class fit_raster:
 
         # Create a delayed task for each (y, x) spectrum (numpy style)
         with Pool(processes=ncores) as pool:
-            results = list(tqdm(pool.imap(self.get_bluewing_asym, tasks), total=len(tasks), desc='Calculating Blue-wing asym'))
+            results = list(pool.imap(self.get_bluewing_asym, tasks), total=len(tasks), desc='Calculating Blue-wing asym')
 
         # Reshape the results back into the (y, x) shape
         res = np.array([result for result in results], dtype='object').reshape(y_size, x_size)
