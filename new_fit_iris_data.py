@@ -21,11 +21,11 @@ import pdb
 
 
 if os.uname().sysname == 'Linux':
-    IRIS_data_loc = '/mnt/data/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/mnt/data/ug/hurlem24/iris_data/iris_output/iris_output/'
+    IRIS_data_loc = '/home/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/home/ug/hurlem24/iris_data/iris_output/iris_output/'
 else:
-    IRIS_data_loc = '/mnt/data/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/mnt/data/ug/hurlem24/iris_data/iris_output/iris_output/'
+    IRIS_data_loc = '/home/ug/hurlem24/iris_data/iris_input_data/'
+    output_loc = '/home/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 
 # Plot the output of the fitting routine
