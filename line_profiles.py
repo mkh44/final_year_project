@@ -85,10 +85,25 @@ cii_v_dopp = ((cii_wavelength - lambda_cii) / lambda_cii) * (c / 1e3)
 lambda_mg = 2795.5
 mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
 
+# Defining line titles
+def get_int_map(file):
+    with asdf.open(file) as af:
+        keys = af.tree.keys()
+        # Si IV / C II files
+        if 'q_int_map' in keys:
+            return af.tree['q_int_map']
+
+        # Mg II files
+        elif 'mgii_k_integ_int' in keys:
+            return af.tree['mgii_k_integ_int']
+        elif 'mgii_h_integ_int' in keys:
+            return af.tree['mgii_h_integ_int']
+        else:
+            raise KeyError("No intensity map found in ASDF file")
+
 def plot_line_profile(lines, time_x):
 # Plotting Doppler velocity
-
-    fig, ax = plt.subplots(3, 1, sharex = True)
+    fig, ax = plt.subplots(3, 1, sharex = True, figsize=(6, 6))
 
 
     # Masks for colour difference on plot
@@ -163,67 +178,10 @@ def plot_line_profile(lines, time_x):
     ax[2].axvline(0, color='k', linestyle='dashed', linewidth=1)
 
     # Saving plot and displaying
-    save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s.png")
+    save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s_{height}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
-
-# Plotting wavelength
-    fig, ax = plt.subplots(3, 1)
-    ax[0].plot(si_wavelength, si_data_arr[time_x, height], color='k')
-    ax[0].set_xlabel(' ')
-    ax[0].set_ylim(0, y_lim)
-    ax0 = ax[0].twinx()
-    ax0.set_yticks([])
-    ax0.set_yticklabels([])
-    ax0.set_ylabel(f'{si_title}')
-    ax[0].xaxis.set_minor_locator(MultipleLocator(10))
-    plt.title(f'Time: {time_x} s', loc='right')
-
-    ax[1].plot(cii_wavelength, cii_data_arr[time_x, height], color='k')
-    ax[1].set_xlabel(' ')
-    ax[1].set_ylabel("Intensity")
-    ax[1].set_ylim(0, y_lim)
-    ax1 = ax[1].twinx()
-    ax1.set_yticks([])
-    ax1.set_yticklabels([])
-    ax1.set_ylabel(f'{cii_title}')
-    ax[1].xaxis.set_minor_locator(MultipleLocator(10))
-
-    ax[2].plot(mg_wavelength, mg_data_arr[time_x, height], color='k')
-    ax[2].set_ylabel(' ')
-    ax[2].set_xlabel('Wavelength (Å)')
-    ax[2].set_ylim(0, y_lim)
-    ax2 = ax[2].twinx()
-    ax2.set_yticks([])
-    ax2.set_yticklabels([])
-    ax2.set_ylabel(f'{mg_title}')
-    ax[2].xaxis.set_minor_locator(MultipleLocator(10))
-
-
-    save_path = os.path.join(output_loc, f"wavelength_profiles_{time_x}s.png")
-    #plt.savefig(save_path, bbox_inches='tight')
-    plt.show()
-    plt.close(fig)
-
-
-#plot_line_profile(lines, time_x)
-
-# Defining line titles
-def get_int_map(file):
-    with asdf.open(file) as af:
-        keys = af.tree.keys()
-        # Si IV / C II files
-        if 'q_int_map' in keys:
-            return af.tree['q_int_map']
-
-        # Mg II files
-        elif 'mgii_k_integ_int' in keys:
-            return af.tree['mgii_k_integ_int']
-        elif 'mgii_h_integ_int' in keys:
-            return af.tree['mgii_h_integ_int']
-        else:
-            raise KeyError("No intensity map found in ASDF file")
 
 
 # Plotting Intensity quartiles reference
@@ -235,37 +193,56 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     mg_q_int_map = get_int_map(mg_file)
 
     cadence = main_header['STEPT_AV']
-
-    fig, ax = plt.subplots(3, 1, sharex=True)
-
     alpha = 1
 
- # Si IV
+ # Si time and position
     si_t_array = np.arange(si_q_int_map.data.shape[1]) * cadence
-    si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (
-        np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
-
+    si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
     si_upr_bnd = np.nanpercentile(si_q_int_map.data, 100 - alpha)
 
+# Cii time and position
+    #cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
+    #cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
+    #cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
+
+# Mg time and postion
+    mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
+    mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
+    mg_upr_bnd = np.nanpercentile(mg_q_int_map.data, 100 - alpha)
+
+# Defining profile pixel
+    # Si IV
+    si_time_coord = si_t_array[time_x]
+    si_slit_coord = si_slit_pos[height]
+
+    # C ii
+    # cii_time_coord = cii_t_array[time_x]
+    # cii_slit_coord = cii_slit_pos[height]
+
+    # Mg ii
+    mg_time_coord = mg_t_array[time_x]
+    mg_slit_coord = mg_slit_pos[height]
+
+# PLOTTING
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 6))
+
+# Si plotting
     im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
         extent=[si_t_array.min(), si_t_array.max(), si_slit_pos.min(), si_slit_pos.max()],
         norm=colors.Normalize(vmin=0, vmax=si_upr_bnd))
-
     ax[0].set_ylabel(' ')
 
-# second Si axis for label
+    # second Si axis for label
     ax_0 = ax[0].twinx()
     ax_0.set_ylabel(si_title)
     ax_0.set_yticks([])
 
+    # draw cross
+    ax[0].scatter(si_time_coord, si_slit_coord, marker='x', s=120, c='k', linewidths=2)
 
-    # # C ii
-    # cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
-    # cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (
-    #         np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
-    #
-    # cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
-    #
+    #plt.title("Intensity Quartiles", loc='right')
+
+# # C ii plotting
     # im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
     #     extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
     #     cii_slit_pos.max()], norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd))
@@ -278,16 +255,13 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     # ax_1.set_ylabel(cii_title)
     # ax_1.set_yticks([])
 
-# Mg ii
-    mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
-    mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
-            np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
+    # draw cross
+    # ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=120, c='k', linewidths=2)
 
-    mg_upr_bnd = np.nanpercentile(mg_q_int_map.data, 100 - alpha)
-
+# Mg ii plotting
     im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
         extent=[mg_t_array.min(), mg_t_array.max(), mg_slit_pos.min(), mg_slit_pos.max()],
-        norm=colors.Normalize(vmin=0, vmax=mg_upr_bnd))
+                       norm=colors.Normalize(vmin=0, vmax=mg_upr_bnd))
 
     ax[2].set_ylabel(" ")
     ax[2].set_xlabel("Time (s)")
@@ -298,15 +272,16 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     ax_2.set_ylabel(mg_title)
     ax_2.set_yticks([])
 
-    # Colorbar
+    # draw cross
+    ax[2].scatter(mg_time_coord, mg_slit_coord, marker='x', s=120, c='k', linewidths=2)
+
+# Colorbar
     fig.colorbar(im2, ax=ax, label="Integrated Intensity")
 
-    plt.suptitle("Intensity Quartiles")
 
-    save_path = os.path.join(output_loc, f"quartile_maps_{event}.png")
+    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_x}_{height}.png")
     plt.savefig(save_path, bbox_inches="tight")
-
     plt.show()
 
 plot_iris_sns_quartile_fits(si_title, mg_title, event, hdr)
-
+plot_line_profile(lines, time_x)
