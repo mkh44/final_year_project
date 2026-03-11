@@ -225,7 +225,6 @@ def get_int_map(file):
         else:
             raise KeyError("No intensity map found in ASDF file")
 
-    return q_int_map
 
 # Plotting Intensity quartiles reference
 def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
@@ -237,79 +236,72 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
 
     cadence = main_header['STEPT_AV']
 
-    fig, ax = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
+    fig, ax = plt.subplots(3, 1, sharex=True)
 
     alpha = 1
 
  # Si IV
     si_t_array = np.arange(si_q_int_map.data.shape[1]) * cadence
     si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (
-        np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2']
-    )
+        np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
 
     si_upr_bnd = np.nanpercentile(si_q_int_map.data, 100 - alpha)
 
-    im0 = ax[0].imshow(
-        si_q_int_map.data,
-        origin='lower',
-        cmap='Reds_r',
-        aspect='auto',
-        extent=[si_t_array.min(), si_t_array.max(),
-                si_slit_pos.min(), si_slit_pos.max()],
-        norm=colors.Normalize(vmin=0, vmax=si_upr_bnd)
-    )
+    im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
+        extent=[si_t_array.min(), si_t_array.max(), si_slit_pos.min(), si_slit_pos.max()],
+        norm=colors.Normalize(vmin=0, vmax=si_upr_bnd))
 
     ax[0].set_ylabel(' ')
-    ax[0].set_title(si_title)
+
+# second Si axis for label
+    ax_0 = ax[0].twinx()
+    ax_0.set_ylabel(si_title)
+    ax_0.set_yticks([])
 
 
     # # C ii
     # cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
     # cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (
-    #         np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2']
-    # )
+    #         np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
     #
     # cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
     #
-    # im1 = ax[1].imshow(
-    #     cii_q_int_map.data,
-    #     origin='lower',
-    #     cmap='Reds_r',
-    #     aspect='auto',
-    #     extent=[cii_t_array.min(), cii_t_array.max(),
-    #             cii_slit_pos.min(), cii_slit_pos.max()],
-    #     norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd)
-    # )
+    # im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
+    #     extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
+    #     cii_slit_pos.max()], norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd))
     #
-    # ax[1].set_ylabel(" ")
-    # ax[1].set_title(cii_title)
+    # ax[1].set_ylabel("Solar Y")
+    # ax[1].set_title(' ')
+
+    # second cii axis for label
+    # ax_1 = ax[1].twinx()
+    # ax_1.set_ylabel(cii_title)
+    # ax_1.set_yticks([])
 
 # Mg ii
     mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
     mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
-            np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2']
-    )
+            np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
 
     mg_upr_bnd = np.nanpercentile(mg_q_int_map.data, 100 - alpha)
 
-    im2 = ax[2].imshow(
-        mg_q_int_map.data,
-        origin='lower',
-        cmap='Reds_r',
-        aspect='auto',
-        extent=[mg_t_array.min(), mg_t_array.max(),
-                mg_slit_pos.min(), mg_slit_pos.max()],
-        norm=colors.Normalize(vmin=0, vmax=mg_upr_bnd)
-    )
+    im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
+        extent=[mg_t_array.min(), mg_t_array.max(), mg_slit_pos.min(), mg_slit_pos.max()],
+        norm=colors.Normalize(vmin=0, vmax=mg_upr_bnd))
 
-    ax[2].set_ylabel("Solar Y")
+    ax[2].set_ylabel(" ")
     ax[2].set_xlabel("Time (s)")
-    ax[2].set_title(mg_title)
+    ax[2].set_title(' ')
+
+    # second mg axis for label
+    ax_2 = ax[2].twinx()
+    ax_2.set_ylabel(mg_title)
+    ax_2.set_yticks([])
 
     # Colorbar
-    fig.colorbar(im2, ax=ax, label="Integrated Intensity", shrink=0.6)
+    fig.colorbar(im2, ax=ax, label="Integrated Intensity")
 
-    plt.suptitle(f"IRIS Intensity Quartiles")
+    plt.suptitle(f"Intensity Quartiles")
 
     save_path = os.path.join(output_loc, f"quartile_maps_{event}.png")
     plt.savefig(save_path, bbox_inches="tight")
