@@ -37,10 +37,10 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_x = 12000
-height = 100
-y_lim = 210
-x_lim = 250
+time_x = 10000
+height = 130
+y_lim = 100
+x_lim = 170
 
 hdul = fits.open(fits_file)
 hdr = hdul[0].header
@@ -224,7 +224,7 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     mg_slit_coord = mg_slit_pos[height]
 
 # PLOTTING
-    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 6))
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 8))
 
 # Si plotting
     im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
@@ -276,7 +276,8 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     ax[2].scatter(mg_time_coord, mg_slit_coord, marker='x', s=120, c='k', linewidths=2)
 
 # Colorbar
-    fig.colorbar(im2, ax=ax, label="Integrated Intensity")
+    cbar = fig.colorbar(im0, ax=ax, orientation='horizontal', pad=0.12, fraction=0.03)
+    cbar.set_label("Integrated Intensity")
 
 
     save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_x}_{height}.png")
