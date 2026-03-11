@@ -301,7 +301,7 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     # Colorbar
     fig.colorbar(im2, ax=ax, label="Integrated Intensity")
 
-    plt.suptitle(f"Intensity Quartiles")
+    plt.suptitle("Intensity Quartiles")
 
     save_path = os.path.join(output_loc, f"quartile_maps_{event}.png")
     plt.savefig(save_path, bbox_inches="tight")
