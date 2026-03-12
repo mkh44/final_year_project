@@ -29,7 +29,7 @@ event = '20230503_072923'
 output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\line_profiles"
 input_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
 si_file = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\IRIS_fitting_Si_IV_1403_20230503_072923.asdf"
-cii_file = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\IRIS_fitting_C_II_1336_20230503_072923.asdf"
+cii_file = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\IRIS_fitting_C_II_1334_20230503_072923.asdf"
 mg_file = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\IRIS_fitting_smooth_MgII_20230503_072923.asdf"
 
 # Load FITS file
@@ -37,10 +37,10 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_x = 10000
-height = 130
-y_lim = 100
-x_lim = 170
+time_x = 12000
+height = 150
+y_lim = 850
+x_lim = 470
 
 hdul = fits.open(fits_file)
 hdr = hdul[0].header
@@ -89,7 +89,8 @@ mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
 def get_int_map(file):
     with asdf.open(file) as af:
         keys = af.tree.keys()
-        # Si IV / C II files
+
+        # Si IV / C II
         if 'q_int_map' in keys:
             return af.tree['q_int_map']
 
@@ -185,11 +186,11 @@ def plot_line_profile(lines, time_x):
 
 
 # Plotting Intensity quartiles reference
-def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
+def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header):
 
     #Get int maps
     si_q_int_map = get_int_map(si_file)
-    #cii_q_int_map = get_int_map(cii_file)
+    cii_q_int_map = get_int_map(cii_file)
     mg_q_int_map = get_int_map(mg_file)
 
     cadence = main_header['STEPT_AV']
@@ -201,9 +202,9 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     si_upr_bnd = np.nanpercentile(si_q_int_map.data, 100 - alpha)
 
 # Cii time and position
-    #cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
-    #cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
-    #cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
+    cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
+    cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
+    cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
 
 # Mg time and postion
     mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
@@ -216,8 +217,8 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     si_slit_coord = si_slit_pos[height]
 
     # C ii
-    # cii_time_coord = cii_t_array[time_x]
-    # cii_slit_coord = cii_slit_pos[height]
+    cii_time_coord = cii_t_array[time_x]
+    cii_slit_coord = cii_slit_pos[height]
 
     # Mg ii
     mg_time_coord = mg_t_array[time_x]
@@ -242,21 +243,21 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
 
     #plt.title("Intensity Quartiles", loc='right')
 
-# # C ii plotting
-    # im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
-    #     extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
-    #     cii_slit_pos.max()], norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd))
-    #
-    # ax[1].set_ylabel("Solar Y")
-    # ax[1].set_title(' ')
+# C ii plotting
+    im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
+        extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
+        cii_slit_pos.max()], norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd))
 
-    # second cii axis for label
-    # ax_1 = ax[1].twinx()
-    # ax_1.set_ylabel(cii_title)
-    # ax_1.set_yticks([])
+    ax[1].set_ylabel("Solar Y")
+    ax[1].set_title(' ')
 
-    # draw cross
-    # ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=120, c='k', linewidths=2)
+    #second cii axis for label
+    ax_1 = ax[1].twinx()
+    ax_1.set_ylabel(cii_title)
+    ax_1.set_yticks([])
+
+    #draw cross
+    ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=120, c='k', linewidths=2)
 
 # Mg ii plotting
     im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
@@ -284,5 +285,5 @@ def plot_iris_sns_quartile_fits(si_title, mg_title, event, main_header):
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
-plot_iris_sns_quartile_fits(si_title, mg_title, event, hdr)
+plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, hdr)
 plot_line_profile(lines, time_x)
