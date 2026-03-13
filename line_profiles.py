@@ -38,8 +38,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_x = 10000
-height = 100
-y_lim = 75
+height = 130
+y_lim = 200
 x_lim = 200
 zoom = 250
 
