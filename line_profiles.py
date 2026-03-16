@@ -240,7 +240,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_0.set_yticks([])
 
     # draw cross
-    ax[0].scatter(si_time_coord, si_slit_coord, marker='x', s=120, c='#c4f816', linewidths=2)
+    ax[0].scatter(si_time_coord, si_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
 
     #plt.title("Intensity Quartiles", loc='right')
 
@@ -258,7 +258,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_1.set_yticks([])
 
     #draw cross
-    ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=120, c='#c4f816', linewidths=2)
+    ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
 
 # Mg ii plotting
     im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
@@ -275,7 +275,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_2.set_yticks([])
 
     # draw cross
-    ax[2].scatter(mg_time_coord, mg_slit_coord, marker='x', s=120, c='#c4f816', linewidths=2)
+    ax[2].scatter(mg_time_coord, mg_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
 
 # Zoom
     ax[0].set_xlim(si_time_coord - zoom, si_time_coord + zoom)
