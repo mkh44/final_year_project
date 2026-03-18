@@ -37,9 +37,10 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = 7000
-height_solar_y = 260
-x_lim = 350
+time_seconds = [11500, 11750, 11900, 12050]
+height_solar_y = 257
+
+x_lim = 450
 zoom = 250
 fs = 16 # font size
 
@@ -81,9 +82,9 @@ def plot_line_profile(lines, time_idx):
 # Getting time and height in index
     cadence = hdr['STEPT_AV']
     time_array = np.arange(si_data_arr.shape[0]) * cadence
-    si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
+    #si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
+    #
 
-    time_idx = np.argmin(np.abs(time_array - time_seconds))
     height_idx = np.argmin(np.abs(si_slit_pos - height_solar_y))
 
     actual_time = time_array[time_idx]
@@ -129,7 +130,7 @@ def plot_line_profile(lines, time_idx):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}', fontsize=fs)
 
-    plt.title(f'Time: {actual_time:.1f} s, height: {height_solar_y} arcsec', loc='right', fontsize=fs)
+    plt.title(f'Time: {actual_time:.1f} s, Height: {height_solar_y} arcsec', loc='right', fontsize=fs)
 
     # Cii plot
     ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, height_idx], color='k')
@@ -173,14 +174,15 @@ def plot_line_profile(lines, time_idx):
     ax[2].axvline(0, color='k', linestyle='dashed', linewidth=1)
 
     # Saving plot and displaying
-    save_path = os.path.join(output_loc, f"doppler_profiles_{time_seconds}s_{height_solar_y}.png")
+    save_path = os.path.join(output_loc, f"doppler_profiles_{actual_time}s_{height_solar_y}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
 
 
 # Plotting Intensity quartiles reference
-def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header, time_idx):
+def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header, time):
+
 
     # Defining common extent
     global_max = np.nanmax([
@@ -191,12 +193,10 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     global_min = 0
     norm = colors.Normalize(vmin=global_min, vmax=global_max)
 
-# Defining profile pixel
-    target_t = time_seconds
-    target_y = height_solar_y
+
 
 # PLOTTING
-    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 8))
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 5))
 
 # Si plotting
     im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
@@ -240,15 +240,21 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_2.set_ylabel(mg_title, fontsize=fs)
     ax_2.set_yticks([])
 
+    # Defining profile pixel
 
-# Draw cross
+    target_y = height_solar_y
+    max_target_t = max(time)
+    min_target_t = min(time)
+
+    for time in time_seconds:
+        for axis in ax:
+            axis.scatter(time, target_y, marker='x', s=250, c='k', lw=3)
     for axis in ax:
-        axis.scatter(target_t, target_y, marker='x', s=250, c='cyan', lw=3)
-        axis.set_xlim(target_t - zoom, target_t + zoom)
-        axis.set_ylim(target_y - 10, target_y + 10)
+        axis.set_xlim(min_target_t - zoom, max_target_t + zoom)
+        axis.set_ylim(target_y - 20, target_y + 20)
 
 # Colorbar
-    cbar = fig.colorbar(im2, ax=ax, orientation='horizontal', pad=0.1, fraction=0.05)
+    cbar = fig.colorbar(im2, ax=ax, orientation='vertical', pad=0.12, fraction=0.05)
     cbar.set_label("Integrated Intensity", fontsize=fs)
     tick_locator = ticker.LinearLocator(numticks=4)
     cbar.locator = tick_locator
@@ -322,11 +328,14 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
             np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
 
 
+plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, hdr, time_seconds)
+
 # Getting index time
+for time in time_seconds:
+    time_idx = time_to_index(si_t_array, time)
+    plot_line_profile(lines, time_idx)
 
-time_idx = time_to_index(si_t_array, time_seconds)
 
-# Calling plotting functions
-plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, hdr, time_idx)
-plot_line_profile(lines, time_idx)
+
+
 
