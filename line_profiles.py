@@ -38,8 +38,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_seconds = 7000
-height_solar_y = 20
-x_lim = 250
+height_solar_y = 260
+x_lim = 350
 zoom = 250
 fs = 16 # font size
 
@@ -129,7 +129,7 @@ def plot_line_profile(lines, time_idx):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}', fontsize=fs)
 
-    plt.title(f'Time: {actual_time:.1f} s', loc='right', fontsize=fs)
+    plt.title(f'Time: {actual_time:.1f} s, height: {height_solar_y} arcsec', loc='right', fontsize=fs)
 
     # Cii plot
     ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, height_idx], color='k')
@@ -245,6 +245,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     for axis in ax:
         axis.scatter(target_t, target_y, marker='x', s=250, c='cyan', lw=3)
         axis.set_xlim(target_t - zoom, target_t + zoom)
+        axis.set_ylim(target_y - 10, target_y + 10)
 
 # Colorbar
     cbar = fig.colorbar(im2, ax=ax, orientation='horizontal', pad=0.1, fraction=0.05)
