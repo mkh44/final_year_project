@@ -7,7 +7,7 @@
 import pdb
 import glob
 import os
-
+from matplotlib import ticker
 import datetime as dt
 import numpy as np
 from astropy.io import fits
@@ -38,11 +38,10 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_seconds = 7000
-height_solar_y = 260
-
+height_solar_y = 20
+x_lim = 250
 zoom = 250
-
-
+fs = 16 # font size
 
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))
@@ -90,13 +89,12 @@ def plot_line_profile(lines, time_idx):
     actual_time = time_array[time_idx]
 
 # Defining limits
-    # x (Doppler velocity)
-    x_lim = max(si_v_dopp.max(), cii_v_dopp.max(), mg_v_dopp.max())
 
     # y (intensity)
-    y_lim = max(si_data_arr[time_idx, :].max(),
-                cii_data_arr[time_idx, :].max(),
-                mg_data_arr[time_idx, :].max())
+    y_max = max(si_data_arr[time_idx, height_idx].max(),
+                cii_data_arr[time_idx, height_idx].max(),
+                mg_data_arr[time_idx, height_idx].max())
+    y_lim = y_max + y_max*0.05
 
 
 # Plotting Doppler velocity
@@ -129,9 +127,9 @@ def plot_line_profile(lines, time_idx):
     ax0.set_yticks([])
     ax0.set_ylim(0, y_lim)
     ax0.set_yticklabels([])
-    ax0.set_ylabel(f'{si_title}')
+    ax0.set_ylabel(f'{si_title}', fontsize=fs)
 
-    plt.title(f'Time: {actual_time:.1f} s', loc='right')
+    plt.title(f'Time: {actual_time:.1f} s', loc='right', fontsize=fs)
 
     # Cii plot
     ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, height_idx], color='k')
@@ -143,13 +141,13 @@ def plot_line_profile(lines, time_idx):
     ax[1].xaxis.set_minor_locator(MultipleLocator(10))
     ax[1].set_ylim(0, y_lim)
     ax[1].set_xlabel(' ')
-    ax[1].set_ylabel("Intensity")
+    ax[1].set_ylabel("Intensity", fontsize=fs)
 
     # Seconds Cii axis for titles
     ax1 = ax[1].twinx()
     ax1.set_yticks([])
     ax1.set_yticklabels([])
-    ax1.set_ylabel(f'{cii_title}')
+    ax1.set_ylabel(f'{cii_title}', fontsize=fs)
 
     # Mg plot
     ax[2].plot(mg_v_dopp, mg_data_arr[time_idx, height_idx], color='k')
@@ -158,7 +156,7 @@ def plot_line_profile(lines, time_idx):
 
     # Set Mg axis limits and labels
     ax[2].set_ylabel(' ')
-    ax[2].set_xlabel('Doppler Velocity (km/s)')
+    ax[2].set_xlabel('Doppler Velocity (km/s)', fontsize=fs)
     ax[2].set_ylim(0, y_lim)
     ax[2].set_xlim(-x_lim, x_lim)
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
@@ -167,7 +165,7 @@ def plot_line_profile(lines, time_idx):
     ax2 = ax[2].twinx()
     ax2.set_yticks([])
     ax2.set_yticklabels([])
-    ax2.set_ylabel(f'{mg_title}')
+    ax2.set_ylabel(f'{mg_title}', fontsize=fs)
 
     # Dotted line at x=0
     ax[0].axvline(0, color='k', linestyle='dashed', linewidth=1)
@@ -208,10 +206,10 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
 
     # second Si axis for label
     ax_0 = ax[0].twinx()
-    ax_0.set_ylabel(si_title)
+    ax_0.set_ylabel(si_title, fontsize=fs)
     ax_0.set_yticks([])
 
-    plt.title(f'Height: {height_solar_y}', loc='right')
+    plt.title(f'Height: {height_solar_y}', loc='right', fontsize=fs)
 
 
 # C ii plotting
@@ -219,12 +217,12 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
         extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
         cii_slit_pos.max()], norm=norm)
 
-    ax[1].set_ylabel("Solar Y")
+    ax[1].set_ylabel("Solar Y", fontsize=fs)
     ax[1].set_title(' ')
 
     #second cii axis for label
     ax_1 = ax[1].twinx()
-    ax_1.set_ylabel(cii_title)
+    ax_1.set_ylabel(cii_title, fontsize=fs)
     ax_1.set_yticks([])
 
 
@@ -234,24 +232,26 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
                        norm=norm)
 
     ax[2].set_ylabel(" ")
-    ax[2].set_xlabel("Time (s)")
+    ax[2].set_xlabel("Time (s)", fontsize=fs)
     ax[2].set_title(' ')
 
     # second mg axis for label
     ax_2 = ax[2].twinx()
-    ax_2.set_ylabel(mg_title)
+    ax_2.set_ylabel(mg_title, fontsize=fs)
     ax_2.set_yticks([])
 
 
 # Draw cross
     for axis in ax:
-        axis.scatter(target_t, target_y, marker='x', s=250, c='cyan', lw=2)
+        axis.scatter(target_t, target_y, marker='x', s=250, c='cyan', lw=3)
         axis.set_xlim(target_t - zoom, target_t + zoom)
 
 # Colorbar
-    cbar = fig.colorbar(im2, ax=ax, orientation='horizontal', pad=0.12, fraction=0.03)
-    cbar.set_label("Integrated Intensity")
-
+    cbar = fig.colorbar(im2, ax=ax, orientation='horizontal', pad=0.1, fraction=0.05)
+    cbar.set_label("Integrated Intensity", fontsize=fs)
+    tick_locator = ticker.LinearLocator(numticks=4)
+    cbar.locator = tick_locator
+    cbar.update_ticks()
 
     save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_seconds}_{height_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
