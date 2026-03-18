@@ -91,19 +91,12 @@ def plot_line_profile(lines, time_idx):
 
 # Defining limits
     # x (Doppler velocity)
-    v_min = min(si_v_dopp.min(), cii_v_dopp.min(), mg_v_dopp.min())
-    v_max = max(si_v_dopp.max(), cii_v_dopp.max(), mg_v_dopp.max())
-    v_margin = 0.05 * (v_max - v_min)  # 5% margin
-    x_lim = (v_min - v_margin, v_max + v_margin)
+    x_lim = max(si_v_dopp.max(), cii_v_dopp.max(), mg_v_dopp.max())
 
     # y (intensity)
-    y_min = min(si_data_arr[time_idx, :].min(),
-                cii_data_arr[time_idx, :].min(),
-                mg_data_arr[time_idx, :].min())
-    y_max = max(si_data_arr[time_idx, :].max(),
+    y_lim = max(si_data_arr[time_idx, :].max(),
                 cii_data_arr[time_idx, :].max(),
                 mg_data_arr[time_idx, :].max())
-    y_lim = (y_max + 0.05) #margin
 
 
 # Plotting Doppler velocity
@@ -128,7 +121,7 @@ def plot_line_profile(lines, time_idx):
     # Set Si IV axis labels abd tickmarks
     ax[0].set_xlabel(' ')
     ax[0].set_ylim(0, y_lim)
-    ax[0].set_xlim(x_lim)
+    ax[0].set_xlim(-x_lim, x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
 
     # Second Si IV axis for titles
@@ -146,7 +139,7 @@ def plot_line_profile(lines, time_idx):
     ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_idx, height_idx][cii_blueshift], color='blue')
 
     # Set Cii axis limits and labels
-    ax[1].set_xlim(x_lim)
+    ax[1].set_xlim(-x_lim, x_lim)
     ax[1].xaxis.set_minor_locator(MultipleLocator(10))
     ax[1].set_ylim(0, y_lim)
     ax[1].set_xlabel(' ')
@@ -167,7 +160,7 @@ def plot_line_profile(lines, time_idx):
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Doppler Velocity (km/s)')
     ax[2].set_ylim(0, y_lim)
-    ax[2].set_xlim(x_lim)
+    ax[2].set_xlim(-x_lim, x_lim)
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
     # Second Mg axis for titles
