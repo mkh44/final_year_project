@@ -37,14 +37,15 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_x = 10000
-height = 130
-y_lim = 200
-x_lim = 200
+time_seconds = 7000
+height_solar_y = 260
+
 zoom = 250
 
-hdul = fits.open(fits_file)
-hdr = hdul[0].header
+
+
+def time_to_index(time_array, target_time):
+    return np.argmin(np.abs(time_array - target_time))
 
 def get_wavelength(header, line_index):
     crval = header['CRVAL1']
@@ -54,37 +55,6 @@ def get_wavelength(header, line_index):
     wavelength = crval + (np.arange(n_wave) - (crpix - 1)) * cdelt
     return wavelength
 
-# Get line names
-
-si_title = hdr['TDESC' + str(lines[0])]
-cii_title = hdr['TDESC' + str(lines[1])]
-mg_title = hdr['TDESC' + str(lines[2])]
-
-
-# Get Si IV properties
-si_header = hdul[lines[0]].header
-si_wavelength = get_wavelength(si_header,0)
-si_data_arr = hdul[lines[0]].data
-
-# Get Cii properties
-cii_header = hdul[lines[1]].header
-cii_wavelength = get_wavelength(cii_header, 1)
-cii_data_arr = hdul[lines[1]].data
-
-# Get mg properties
-mg_header = hdul[lines[2]].header
-mg_wavelength = get_wavelength(mg_header, 2)
-mg_data_arr = hdul[lines[2]].data
-
-# Doppler velocities
-lambda_si = 1402.8
-si_v_dopp = ((si_wavelength - lambda_si) / lambda_si) * (c / 1e3)
-
-lambda_cii = 1335.7
-cii_v_dopp = ((cii_wavelength - lambda_cii) / lambda_cii) * (c / 1e3)
-
-lambda_mg = 2795.5
-mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
 
 # Defining line titles
 def get_int_map(file):
@@ -103,7 +73,39 @@ def get_int_map(file):
         else:
             raise KeyError("No intensity map found in ASDF file")
 
-def plot_line_profile(lines, time_x):
+def plot_line_profile(lines, time_idx):
+# Getting pixel array
+    si_data_arr = hdul[lines[0]].data
+    cii_data_arr = hdul[lines[1]].data
+    mg_data_arr = hdul[lines[2]].data
+
+# Getting time and height in index
+    cadence = hdr['STEPT_AV']
+    time_array = np.arange(si_data_arr.shape[0]) * cadence
+    si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
+
+    time_idx = np.argmin(np.abs(time_array - time_seconds))
+    height_idx = np.argmin(np.abs(si_slit_pos - height_solar_y))
+
+    actual_time = time_array[time_idx]
+
+# Defining limits
+    # x (Doppler velocity)
+    v_min = min(si_v_dopp.min(), cii_v_dopp.min(), mg_v_dopp.min())
+    v_max = max(si_v_dopp.max(), cii_v_dopp.max(), mg_v_dopp.max())
+    v_margin = 0.05 * (v_max - v_min)  # 5% margin
+    x_lim = (v_min - v_margin, v_max + v_margin)
+
+    # y (intensity)
+    y_min = min(si_data_arr[time_idx, :].min(),
+                cii_data_arr[time_idx, :].min(),
+                mg_data_arr[time_idx, :].min())
+    y_max = max(si_data_arr[time_idx, :].max(),
+                cii_data_arr[time_idx, :].max(),
+                mg_data_arr[time_idx, :].max())
+    y_lim = (y_max + 0.05) #margin
+
+
 # Plotting Doppler velocity
     fig, ax = plt.subplots(3, 1, sharex = True, figsize=(6, 6))
 
@@ -119,14 +121,14 @@ def plot_line_profile(lines, time_x):
     mg_blueshift = mg_v_dopp <= 0
 
     #Si IV 1403 plot
-    ax[0].plot(si_v_dopp, si_data_arr[time_x, height], color='k')
-    ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_x, height][si_redshift], color='red')
-    ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_x, height][si_blueshift], color='blue')
+    ax[0].plot(si_v_dopp, si_data_arr[time_idx, height_idx], color='k')
+    ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_idx, height_idx][si_redshift], color='red')
+    ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_idx, height_idx][si_blueshift], color='blue')
 
     # Set Si IV axis labels abd tickmarks
     ax[0].set_xlabel(' ')
     ax[0].set_ylim(0, y_lim)
-    ax[0].set_xlim(-x_lim, x_lim)
+    ax[0].set_xlim(x_lim)
     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
 
     # Second Si IV axis for titles
@@ -136,15 +138,15 @@ def plot_line_profile(lines, time_x):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}')
 
-    plt.title(f'Time: {time_x} s', loc='right')
+    plt.title(f'Time: {actual_time:.1f} s', loc='right')
 
     # Cii plot
-    ax[1].plot(cii_v_dopp, cii_data_arr[time_x, height], color='k')
-    ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_x, height][cii_redshift], color='red')
-    ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_x, height][cii_blueshift], color='blue')
+    ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, height_idx], color='k')
+    ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_idx, height_idx][cii_redshift], color='red')
+    ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_idx, height_idx][cii_blueshift], color='blue')
 
     # Set Cii axis limits and labels
-    ax[1].set_xlim(-x_lim, x_lim)
+    ax[1].set_xlim(x_lim)
     ax[1].xaxis.set_minor_locator(MultipleLocator(10))
     ax[1].set_ylim(0, y_lim)
     ax[1].set_xlabel(' ')
@@ -157,15 +159,15 @@ def plot_line_profile(lines, time_x):
     ax1.set_ylabel(f'{cii_title}')
 
     # Mg plot
-    ax[2].plot(mg_v_dopp, mg_data_arr[time_x, height], color='k')
-    ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_x, height][mg_redshift], color='red')
-    ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_x, height][mg_blueshift], color='blue')
+    ax[2].plot(mg_v_dopp, mg_data_arr[time_idx, height_idx], color='k')
+    ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_idx, height_idx][mg_redshift], color='red')
+    ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_idx, height_idx][mg_blueshift], color='blue')
 
     # Set Mg axis limits and labels
     ax[2].set_ylabel(' ')
     ax[2].set_xlabel('Doppler Velocity (km/s)')
     ax[2].set_ylim(0, y_lim)
-    ax[2].set_xlim(-x_lim, x_lim)
+    ax[2].set_xlim(x_lim)
     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
 
     # Second Mg axis for titles
@@ -180,58 +182,35 @@ def plot_line_profile(lines, time_x):
     ax[2].axvline(0, color='k', linestyle='dashed', linewidth=1)
 
     # Saving plot and displaying
-    save_path = os.path.join(output_loc, f"doppler_profiles_{time_x}s_{height}.png")
+    save_path = os.path.join(output_loc, f"doppler_profiles_{time_seconds}s_{height_solar_y}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
 
 
 # Plotting Intensity quartiles reference
-def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header):
+def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header, time_idx):
 
-    #Get int maps
-    si_q_int_map = get_int_map(si_file)
-    cii_q_int_map = get_int_map(cii_file)
-    mg_q_int_map = get_int_map(mg_file)
+    # Defining common extent
+    global_max = np.nanmax([
+        np.nanpercentile(si_q_int_map.data, 100 - alpha),
+        np.nanpercentile(cii_q_int_map.data, 100 - alpha),
+        np.nanpercentile(mg_q_int_map.data, 100 - alpha)])
 
-    cadence = main_header['STEPT_AV']
-    alpha = 1
-
- # Si time and position
-    si_t_array = np.arange(si_q_int_map.data.shape[1]) * cadence
-    si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
-    si_upr_bnd = np.nanpercentile(si_q_int_map.data, 100 - alpha)
-
-# Cii time and position
-    cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
-    cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
-    cii_upr_bnd = np.nanpercentile(cii_q_int_map.data, 100 - alpha)
-
-# Mg time and postion
-    mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
-    mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
-    mg_upr_bnd = np.nanpercentile(mg_q_int_map.data, 100 - alpha)
+    global_min = 0
+    norm = colors.Normalize(vmin=global_min, vmax=global_max)
 
 # Defining profile pixel
-    # Si IV
-    si_time_coord = si_t_array[time_x]
-    si_slit_coord = si_slit_pos[height]
-
-    # C ii
-    cii_time_coord = cii_t_array[time_x]
-    cii_slit_coord = cii_slit_pos[height]
-
-    # Mg ii
-    mg_time_coord = mg_t_array[time_x]
-    mg_slit_coord = mg_slit_pos[height]
+    target_t = time_seconds
+    target_y = height_solar_y
 
 # PLOTTING
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 8))
 
 # Si plotting
     im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
-        extent=[si_t_array.min(), si_t_array.max(), si_slit_pos.min(), si_slit_pos.max()],
-        norm=colors.Normalize(vmin=0, vmax=si_upr_bnd))
+        extent=[si_t_array.min(), si_t_array.max(), si_slit_pos.min(),
+        si_slit_pos.max()], norm=norm)
     ax[0].set_ylabel(' ')
 
     # second Si axis for label
@@ -239,15 +218,13 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_0.set_ylabel(si_title)
     ax_0.set_yticks([])
 
-    # draw cross
-    ax[0].scatter(si_time_coord, si_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
+    plt.title(f'Height: {height_solar_y}', loc='right')
 
-    #plt.title("Intensity Quartiles", loc='right')
 
 # C ii plotting
     im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
         extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
-        cii_slit_pos.max()], norm=colors.Normalize(vmin=0, vmax=cii_upr_bnd))
+        cii_slit_pos.max()], norm=norm)
 
     ax[1].set_ylabel("Solar Y")
     ax[1].set_title(' ')
@@ -257,13 +234,11 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_1.set_ylabel(cii_title)
     ax_1.set_yticks([])
 
-    #draw cross
-    ax[1].scatter(cii_time_coord, cii_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
 
 # Mg ii plotting
     im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
         extent=[mg_t_array.min(), mg_t_array.max(), mg_slit_pos.min(), mg_slit_pos.max()],
-                       norm=colors.Normalize(vmin=0, vmax=mg_upr_bnd))
+                       norm=norm)
 
     ax[2].set_ylabel(" ")
     ax[2].set_xlabel("Time (s)")
@@ -274,23 +249,90 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_2.set_ylabel(mg_title)
     ax_2.set_yticks([])
 
-    # draw cross
-    ax[2].scatter(mg_time_coord, mg_slit_coord, marker='x', s=250, c='cyan', linewidths=2)
 
-# Zoom
-    ax[0].set_xlim(si_time_coord - zoom, si_time_coord + zoom)
-    ax[1].set_xlim(cii_time_coord - zoom, cii_time_coord + zoom)
-    ax[2].set_xlim(mg_time_coord - zoom, mg_time_coord + zoom)
+# Draw cross
+    for axis in ax:
+        axis.scatter(target_t, target_y, marker='x', s=250, c='cyan', lw=2)
+        axis.set_xlim(target_t - zoom, target_t + zoom)
 
 # Colorbar
-    cbar = fig.colorbar(im0, ax=ax, orientation='horizontal', pad=0.12, fraction=0.03)
+    cbar = fig.colorbar(im2, ax=ax, orientation='horizontal', pad=0.12, fraction=0.03)
     cbar.set_label("Integrated Intensity")
 
 
-    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_x}_{height}.png")
+    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_seconds}_{height_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
-plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, hdr)
-plot_line_profile(lines, time_x)
+
+
+#------------- Universal data -------------
+
+# Get headers
+hdul = fits.open(fits_file)
+hdr = hdul[0].header
+
+# Get line names
+si_title = hdr['TDESC' + str(lines[0])]
+cii_title = hdr['TDESC' + str(lines[1])]
+mg_title = hdr['TDESC' + str(lines[2])]
+
+
+# Get Si IV properties
+si_header = hdul[lines[0]].header
+si_wavelength = get_wavelength(si_header,0)
+
+
+# Get Cii properties
+cii_header = hdul[lines[1]].header
+cii_wavelength = get_wavelength(cii_header, 1)
+
+
+# Get mg properties
+mg_header = hdul[lines[2]].header
+mg_wavelength = get_wavelength(mg_header, 2)
+
+
+# Doppler velocities
+lambda_si = 1402.8
+si_v_dopp = ((si_wavelength - lambda_si) / lambda_si) * (c / 1e3)
+
+lambda_cii = 1335.7
+cii_v_dopp = ((cii_wavelength - lambda_cii) / lambda_cii) * (c / 1e3)
+
+lambda_mg = 2795.5
+mg_v_dopp = ((mg_wavelength - lambda_mg) / lambda_mg) * (c / 1e3)
+
+
+# Get int maps
+si_q_int_map = get_int_map(si_file)
+cii_q_int_map = get_int_map(cii_file)
+mg_q_int_map = get_int_map(mg_file)
+
+cadence = hdr['STEPT_AV']
+alpha = 1
+
+# Si time and position
+si_t_array = np.arange(si_q_int_map.data.shape[1]) * cadence
+si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (
+            np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
+
+# Cii time and position
+cii_t_array = np.arange(cii_q_int_map.data.shape[1]) * cadence
+cii_slit_pos = cii_q_int_map.meta['crval2'] + cii_q_int_map.meta['cdelt2'] * (
+            np.arange(cii_q_int_map.data.shape[0]) - cii_q_int_map.meta['crpix2'])
+
+# Mg time and postion
+mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
+mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
+            np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
+
+
+# Getting index time
+
+time_idx = time_to_index(si_t_array, time_seconds)
+
+# Calling plotting functions
+plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, hdr, time_idx)
+plot_line_profile(lines, time_idx)
 
