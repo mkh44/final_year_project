@@ -38,7 +38,7 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_seconds = [11500, 11750, 11900, 12050]
-height_solar_y = 257
+position_solar_y = 257
 
 x_lim = 450
 zoom = 250
@@ -85,16 +85,16 @@ def plot_line_profile(lines, time_idx):
     #si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
     #
 
-    height_idx = np.argmin(np.abs(si_slit_pos - height_solar_y))
+    pos_idx = np.argmin(np.abs(si_slit_pos - [position_solar_y]))
 
     actual_time = time_array[time_idx]
 
 # Defining limits
 
     # y (intensity)
-    y_max = max(si_data_arr[time_idx, height_idx].max(),
-                cii_data_arr[time_idx, height_idx].max(),
-                mg_data_arr[time_idx, height_idx].max())
+    y_max = max(si_data_arr[time_idx, pos_idx].max(),
+                cii_data_arr[time_idx, pos_idx].max(),
+                mg_data_arr[time_idx, pos_idx].max())
     y_lim = y_max + y_max*0.05
 
 
@@ -113,9 +113,9 @@ def plot_line_profile(lines, time_idx):
     mg_blueshift = mg_v_dopp <= 0
 
     #Si IV 1403 plot
-    ax[0].plot(si_v_dopp, si_data_arr[time_idx, height_idx], color='k')
-    ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_idx, height_idx][si_redshift], color='red')
-    ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_idx, height_idx][si_blueshift], color='blue')
+    ax[0].plot(si_v_dopp, si_data_arr[time_idx, pos_idx], color='k')
+    ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_idx, pos_idx][si_redshift], color='red')
+    ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_idx, pos_idx][si_blueshift], color='blue')
 
     # Set Si IV axis labels abd tickmarks
     ax[0].set_xlabel(' ')
@@ -130,12 +130,12 @@ def plot_line_profile(lines, time_idx):
     ax0.set_yticklabels([])
     ax0.set_ylabel(f'{si_title}', fontsize=fs)
 
-    plt.title(f'Time: {actual_time:.1f} s, Height: {height_solar_y} arcsec', loc='right', fontsize=fs)
+    plt.title(f'Time: {actual_time:.1f} s, Height: {position_solar_y} arcsec', loc='right', fontsize=fs)
 
     # Cii plot
-    ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, height_idx], color='k')
-    ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_idx, height_idx][cii_redshift], color='red')
-    ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_idx, height_idx][cii_blueshift], color='blue')
+    ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, pos_idx], color='k')
+    ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_idx, pos_idx][cii_redshift], color='red')
+    ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_idx, pos_idx][cii_blueshift], color='blue')
 
     # Set Cii axis limits and labels
     ax[1].set_xlim(-x_lim, x_lim)
@@ -151,9 +151,9 @@ def plot_line_profile(lines, time_idx):
     ax1.set_ylabel(f'{cii_title}', fontsize=fs)
 
     # Mg plot
-    ax[2].plot(mg_v_dopp, mg_data_arr[time_idx, height_idx], color='k')
-    ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_idx, height_idx][mg_redshift], color='red')
-    ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_idx, height_idx][mg_blueshift], color='blue')
+    ax[2].plot(mg_v_dopp, mg_data_arr[time_idx, pos_idx], color='k')
+    ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_idx, pos_idx][mg_redshift], color='red')
+    ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_idx, pos_idx][mg_blueshift], color='blue')
 
     # Set Mg axis limits and labels
     ax[2].set_ylabel(' ')
@@ -174,7 +174,7 @@ def plot_line_profile(lines, time_idx):
     ax[2].axvline(0, color='k', linestyle='dashed', linewidth=1)
 
     # Saving plot and displaying
-    save_path = os.path.join(output_loc, f"doppler_profiles_{actual_time}s_{height_solar_y}.png")
+    save_path = os.path.join(output_loc, f"doppler_profiles_{actual_time}s_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.show()
     plt.close(fig)
@@ -209,7 +209,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     ax_0.set_ylabel(si_title, fontsize=fs)
     ax_0.set_yticks([])
 
-    plt.title(f'Height: {height_solar_y}', loc='right', fontsize=fs)
+    plt.title(f'Height: {position_solar_y}', loc='right', fontsize=fs)
 
 
 # C ii plotting
@@ -242,7 +242,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
 
     # Defining profile pixel
 
-    target_y = height_solar_y
+    target_y = position_solar_y
     max_target_t = max(time)
     min_target_t = min(time)
 
@@ -260,7 +260,7 @@ def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_heade
     cbar.locator = tick_locator
     cbar.update_ticks()
 
-    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_seconds}_{height_solar_y}.png")
+    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_seconds}_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
