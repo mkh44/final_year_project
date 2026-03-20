@@ -350,7 +350,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 def plot_combined_fig():
     fig = plt.figure(figsize=(18, 18))
-    fig.suptitle('Doppler Velocity (km/s)', fontsize=fs, pad=30)
+    fig.suptitle('Doppler Velocity (km/s)', fontsize=fs)
     gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.14, wspace=0.05)
 
 
