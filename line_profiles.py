@@ -351,7 +351,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 def plot_combined_fig():
     fig = plt.figure(figsize=(18, 18))
     plt.title('Doppler Velocity (km/s)', fontsize=fs, pad=30)
-    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.1, wspace=0.05)
+    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.14, wspace=0.05)
 
 
     line_info = [
@@ -398,20 +398,11 @@ def plot_combined_fig():
             ax.set_ylim(0, 1.1)
 
             if j == 0:
-                ax.text(
-                    x=-0.05,
-                    y=0.5,
-                    s=title,
-                    va='center', ha='right',
-                    fontsize=fs,
-                    rotation=90,
-                    transform=ax_q.transAxes
-                )
-                ax.set_title(f"{title}", y=0.8, fontsize=fs - 3, loc='left')
+                ax.set_title(f"{title}", loc='left', fontsize=fs - 3)
             else:
                 ax.set_yticklabels([' '])
 
-            ax.set_title(f" t={time_seconds[j]}s", y=0.8, fontsize=fs-3, loc='right')
+            ax.set_title(f"t={time_seconds[j]}s", loc='right', fontsize=fs-3)
 
 
             if i == 0:
