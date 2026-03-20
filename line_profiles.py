@@ -105,7 +105,7 @@ def get_line_profiles(line, expected_wl):
 
     profiles = []
     for t_idx in t_indices:
-        profiles.append(data_arr[t_idx, pos_idx, :] / np.max(data_arr[t_idx, pos_idx, :]))
+        profiles.append(data_arr[t_idx, pos_idx, :])
 
     return v_dopp, profiles
 
@@ -349,8 +349,10 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 
 def plot_combined_fig():
-    fig = plt.figure(figsize=(18, 12))
-    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.4, wspace=0.4)
+    fig = plt.figure(figsize=(18, 18))
+    plt.title('Doppler Velocity (km/s)', fontsize=fs, pad=30)
+    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.1, wspace=0.05)
+
 
     line_info = [
         ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
@@ -358,26 +360,31 @@ def plot_combined_fig():
         ('Mg II', 2, mg_q_int_map, mg_t_array, mg_slit_pos, 2795.5)
     ]
 
+
+
     for i, (title, line_idx, q_map, t_arr, slit_pos, rest_wave) in enumerate(line_info):
         data = get_data_arr(line_idx)
         header = hdul[lines[line_idx]].header
         wavelength = get_wavelength(header, line_idx)
 
         v_dopp, profiles = get_line_profiles(line_idx, rest_wave)
-        pos_idx = np.argmin(np.abs(slit_pos - position_solar_y))
+
 
         # Time indices
         cadence = hdr['STEPT_AV']
         time_array = np.arange(data.shape[0]) * cadence
         t_indices = [time_to_index(time_array, t) for t in time_seconds]
 
+        pos_idx = np.argmin(np.abs(slit_pos - position_solar_y))
+        max_intensity = data[t_indices, pos_idx].max()
+
     # TOP ROW
         for j, t_idx in enumerate(t_indices):
             ax = fig.add_subplot(gs[i * 2, j])
 
             intensity = data[t_idx, pos_idx, :]
-            # Normalise
-            intensity_norm = (intensity - intensity.min()) / (intensity.max() - intensity.min())
+
+            intensity_norm = intensity / max_intensity
 
             red = v_dopp >= 0
             blue = v_dopp < 0
@@ -388,25 +395,24 @@ def plot_combined_fig():
 
             ax.axvline(0, linestyle='--', color='k', linewidth=1)
             ax.set_xlim(-x_lim, x_lim)
-            ax.set_ylim(0, 1)
-
-
-            if j == 0:
-                ax.set_ylabel("Intensity", fontsize=fs)
-
+            ax.set_ylim(0, 1.1)
 
             if j == 0:
-                ax.set_ylabel("Normalized Intensity", fontsize=fs)
+                ax.set_title(f"{title}", y=0.8, fontsize=fs - 3, loc='left', pad=2)
             else:
-                ax.set_yticklabels([])
+                ax.set_yticklabels([' '])
 
-            if i == 2:
-                ax.set_xlabel("Doppler Velocity (km/s)", fontsize=fs)
+            ax.set_title(f" t={time_seconds[j]}s", y=0.8, fontsize=fs-3, loc='right')
+
+
+            if i == 0:
+                ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
             else:
-                ax.set_xticklabels([])
+                ax.set_xticklabels([' '])
 
-            ax.set_title(f"{title} | t={time_seconds[j]}s", fontsize=fs - 2)
-    # BOTTOM ROW QUARTILES
+
+
+        # BOTTOM ROW QUARTILES
         ax_q = fig.add_subplot(gs[i * 2 + 1, :])
 
         im = ax_q.imshow(
@@ -419,7 +425,7 @@ def plot_combined_fig():
 
         # Mark selected points
         for t in time_seconds:
-            ax_q.scatter(t, position_solar_y, marker='x', c='k', s=100)
+            ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
         ax_q.set_ylim(position_solar_y - 20, position_solar_y + 20)
@@ -428,6 +434,9 @@ def plot_combined_fig():
 
         if i == 2:
             ax_q.set_xlabel("Time (s)", fontsize=fs)
+
+    save_path = os.path.join(output_loc, f"line_profiles_{time_seconds}_{position_solar_y}.png")
+    plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
 plot_combined_fig()
