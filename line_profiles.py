@@ -350,7 +350,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 def plot_combined_fig():
     fig = plt.figure(figsize=(18, 18))
-    plt.title('Doppler Velocity (km/s)', fontsize=fs, pad=30)
+    fig.suptitle('Doppler Velocity (km/s)', fontsize=fs, pad=30)
     gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.14, wspace=0.05)
 
 
@@ -382,7 +382,7 @@ def plot_combined_fig():
         for j, t_idx in enumerate(t_indices):
             ax = fig.add_subplot(gs[i * 2, j])
 
-            intensity = data[t_idx, pos_idx, :]
+            intensity = data[t_idx, pos_idx]
 
             intensity_norm = intensity / max_intensity
 
@@ -397,17 +397,19 @@ def plot_combined_fig():
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
 
-            if j == 0:
-                ax.set_title(f"{title}", loc='left', fontsize=fs - 3)
-            else:
+            #if j == 0:
+                #ax.set_title(f"{title}", loc='left', fontsize=fs - 3)
+
+            if j != 0:
                 ax.set_yticklabels([' '])
 
-            ax.set_title(f"t={time_seconds[j]}s", loc='right', fontsize=fs-3)
+            #ax.set_title(f"t={time_seconds[j]}s", loc='right', fontsize=fs-3)
 
 
             if i == 0:
                 ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
-            else:
+
+            if i != 0:
                 ax.set_xticklabels([' '])
 
 
