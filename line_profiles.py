@@ -398,7 +398,16 @@ def plot_combined_fig():
             ax.set_ylim(0, 1.1)
 
             if j == 0:
-                ax.set_title(f"{title}", y=0.8, fontsize=fs - 3, loc='left', pad=2)
+                ax.text(
+                    x=-0.05,
+                    y=0.5,
+                    s=title,
+                    va='center', ha='right',
+                    fontsize=fs,
+                    rotation=90,
+                    transform=ax_q.transAxes
+                )
+                ax.set_title(f"{title}", y=0.8, fontsize=fs - 3, loc='left')
             else:
                 ax.set_yticklabels([' '])
 
