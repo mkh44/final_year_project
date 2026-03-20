@@ -7,7 +7,7 @@
 import pdb
 import glob
 import os
-from matplotlib import ticker
+from matplotlib import ticker, gridspec
 import datetime as dt
 import numpy as np
 from astropy.io import fits
@@ -47,6 +47,9 @@ fs = 16 # font size
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))
 
+def get_data_arr(line):
+    return hdul[lines[line]].data
+
 def get_wavelength(header, line_index):
     crval = header['CRVAL1']
     cdelt = header['CDELT1']
@@ -82,8 +85,7 @@ def plot_line_profile(lines, time_idx):
 # Getting time and height in index
     cadence = hdr['STEPT_AV']
     time_array = np.arange(si_data_arr.shape[0]) * cadence
-    #si_slit_pos = si_q_int_map.meta['crval2'] + si_q_int_map.meta['cdelt2'] * (np.arange(si_q_int_map.data.shape[0]) - si_q_int_map.meta['crpix2'])
-    #
+
 
     pos_idx = np.argmin(np.abs(si_slit_pos - [position_solar_y]))
 
@@ -336,6 +338,54 @@ for time in time_seconds:
     plot_line_profile(lines, time_idx)
 
 
+def plot_combined_fig():
+    fig = plt.figure(figsize=(18, 12))
+    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.4, wspace=0.4)
 
+    line_info = [
+        ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
+        ('C II', 1, cii_q_int_map, cii_t_array, cii_slit_pos, 1335.7),
+        ('Mg II', 2, mg_q_int_map, mg_t_array, mg_slit_pos, 2795.5)
+    ]
 
+    for i, (title, line_idx, q_map, t_arr, slit_pos, rest_wave) in enumerate(line_info):
+        data = get_data_arr(line_idx)
+        header = hdul[lines[line_idx]].header
+        wavelength = get_wavelength(header, line_idx)
+
+        v_dopp = ((wavelength - rest_wave) / rest_wave) * (c / 1e3)
+
+        pos_idx = np.argmin(np.abs(slit_pos - position_solar_y))
+
+        # Time indices
+        cadence = hdr['STEPT_AV']
+        time_array = np.arange(data.shape[0]) * cadence
+        t_indices = [time_to_index(time_array, t) for t in time_seconds]
+
+    # TOP ROW
+        for j, t_idx in enumerate(t_indices):
+            ax = fig.add_subplot(gs[i * 2, j])
+
+            intensity = data[t_idx, pos_idx, :]
+
+            red = v_dopp >= 0
+            blue = v_dopp < 0
+
+            ax.plot(v_dopp, intensity, color='k')
+            ax.plot(v_dopp[red], intensity[red], color='red')
+            ax.plot(v_dopp[blue], intensity[blue], color='blue')
+
+            ax.axvline(0, linestyle='--', color='k', linewidth=1)
+            ax.set_xlim(-x_lim, x_lim)
+            ax.set_ylim(0, intensity.max() * 1.1)
+
+            if i == 2:
+                ax.set_xlabel("Doppler Velocity (km/s)", fontsize=fs)
+            else:
+                ax.set_xticklabels([])
+
+            if j == 0:
+                ax.set_ylabel("Intensity", fontsize=fs)
+
+            ax.set_title(f"{title} | t={time_seconds[j]}s", fontsize=fs - 2)
 

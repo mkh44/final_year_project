@@ -18,7 +18,7 @@ v1.2: Tweaked to enable processing of fulldisk IRIS spectroheliograms (DL, 12-No
 import numpy as np 
 from astropy.io import fits
 #import iris_lmsalpy as iris
-from iris_fitting import extract_irisL2data
+import extract_irisL2data
 from astropy.wcs import WCS
 from glob import glob
 try:

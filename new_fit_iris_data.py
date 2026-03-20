@@ -4,9 +4,10 @@
 # %%
 import glob
 import os
-from iris_fitting.fit_iris_lines import fit_raster
-from iris_fitting import iris_get_mg_features_lv2 as get_mg
-from iris_fitting import get_quartiles
+
+from fit_iris_lines import fit_raster
+import iris_get_mg_features_lv2 as get_mg
+import get_quartiles
 import asdf
 from astropy.io import fits
 import datetime as dt
@@ -14,18 +15,17 @@ from matplotlib.gridspec import GridSpec
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib as mpl
-from iris_fitting import extract_irisL2data
+import extract_irisL2data
 from scipy.constants import speed_of_light
 import pdb
 
 
-if os.uname().sysname == 'Linux':
-    IRIS_data_loc = '/home/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/home/ug/hurlem24/iris_data/iris_output/iris_output/'
-else:
-    IRIS_data_loc = '/home/ug/hurlem24/iris_data/iris_input_data/'
-    output_loc = '/home/ug/hurlem24/iris_data/iris_output/iris_output/'
+# if os.name().sysname == 'Linux':
+IRIS_data_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
+output_loc = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs"
+# else:
+#     IRIS_data_loc = '/home/ug/hurlem24/iris_data/iris_input_data/'
+#     output_loc = '/home/ug/hurlem24/iris_data/iris_output/iris_output/'
 
 
 # Plot the output of the fitting routine
@@ -812,7 +812,7 @@ def fit_iris(file, iris_window, event, do_fit=False):
     data, main_header, header, wavelength = a.open_iris_file(open_window)
 
     if do_fit:
-        results_array, int_map, dopp_map, width_map, vnt_map, asym_map = a.fit_iris_data(v_nontherm=True)
+        #results_array, int_map, dopp_map, width_map, vnt_map, asym_map = a.fit_iris_data(v_nontherm=True)
         plot_time = int_map.date.strftime('%Y%m%d_%H%M%S')
 
         # Next use the quartile approach to get the spectral line properties
@@ -858,13 +858,23 @@ def fit_iris(file, iris_window, event, do_fit=False):
             q_asym_map = a.mk_iris_map(asym, header, main_header)
 
         # Save the outputs as an asdf file for each run
+        with asdf.open(
+                r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\IRIS_fitting_C_II_1335_20230503_072923old.asdf") as af:
+            int_map = af.tree['int_map']
+            dopp_map = af.tree['dopp_map']
+            width_map = af.tree['width_map']
+            vnt_map = af.tree['vnt_map']
+            asym_map = af.tree['asym_map']
+            results_array = af.tree['results_array']
+        print('Running code')
+
         tree = {'results_array': results_array, 'int_map': int_map, 'dopp_map': dopp_map, 'width_map': width_map,
                 'vnt_map': vnt_map, 'asym_map': asym_map, 'q_int_map': q_int_map, 'q_dopp_map': q_dopp_map,
                 'q_width_map': q_width_map,
                 'q_asym_map': q_asym_map, 'quartiles': quartiles}
         with asdf.AsdfFile(tree) as asdf_file:
             asdf_file.write_to(
-                output_loc + event + '/IRIS_fitting_' + save_window.replace(' ', '_') + '_' + plot_time + '.asdf',
+                r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\IRIS_fitting_C_II_1335_20230503_072923.asdf",
                 all_array_compression='zlib')
 
 
@@ -872,7 +882,7 @@ def fit_iris(file, iris_window, event, do_fit=False):
         data, main_header, header, wavelength = a.open_iris_file(open_window)
         img_time = dt.datetime.strptime(main_header['date_obs'], '%Y-%m-%dT%H:%M:%S.%f').strftime('%Y%m%d_%H%M%S')
         with asdf.open(
-                output_loc + event + '/IRIS_fitting_' + save_window.replace(' ', '_') + '_' + img_time + '.asdf') as af:
+                r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\IRIS_fitting_C_II_1335_20230503_072923.asdf") as af:
             int_map = af.tree['int_map']
             dopp_map = af.tree['dopp_map']
             width_map = af.tree['width_map']
@@ -1075,9 +1085,10 @@ def fitdata(event):
     os.makedirs(output_loc + event + '/', exist_ok='True')
 
     # Find the files to be processed
-    f_iris_raster = glob.glob(IRIS_data_loc + event + "/*.fits")
+    f_iris_raster = glob.glob(r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\iris_l2_20230503_072923_4204700135_raster_t000_r00000.fits")
     f_iris_raster.sort()
 
+    print(f_iris_raster)
     for indiv_file in f_iris_raster:
 
         # Get the file time
@@ -1087,7 +1098,7 @@ def fitdata(event):
 
         # Define the windows to be processed. Can process both Si IV lines and both C II lines.
         # Note that C II lines need to be called as: C II 1334 1336 & C II 1335 1336
-        iris_window_list = ['Si IV 1403', 'Si IV 1394', 'C II 1334 1336', 'C II 1335 1336']
+        iris_window_list = ['C II 1334 1336', 'C II 1335 1336']
 
         for iris_window in iris_window_list:
 
@@ -1106,13 +1117,12 @@ def fitdata(event):
 
             try:
                 files = os.path.exists(
-                    output_loc + event + '/IRIS_fitting_' + save_window.replace(' ', '_') + '_' + file_time + '.asdf')
+                    r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\IRIS_fitting_C_II_1335_20230503_072923.asdf")
                 if files == True:
                     print(save_window + ' data already processed. File exists at: ' +
-                          output_loc + event + '/IRIS_fitting_' + save_window.replace(' ',
-                                                                                      '_') + '_' + file_time + '.asdf')
+                          r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\20230503_072923\IRIS_fitting_C_II_1335_20230503_072923.asdf")
                     print("Updating plot...")
-                    fit_iris(indiv_file, iris_window, event, do_fit=False)
+                    fit_iris(indiv_file, iris_window, event, do_fit=True)
                 if files == False:
                     print('Fitting ' + save_window)
                     fit_iris(indiv_file, iris_window, event, do_fit=True)

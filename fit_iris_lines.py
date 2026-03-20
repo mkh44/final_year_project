@@ -23,7 +23,7 @@ import general_routines
 from general_routines import closest
 from scipy.integrate import cumulative_simpson
 from astropy.wcs import WCS
-from iris_fitting import extract_irisL2data
+import extract_irisL2data
 from astropy.io import fits
 
 class fit_raster:
