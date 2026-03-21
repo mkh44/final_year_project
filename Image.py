@@ -24,8 +24,8 @@ hd = f[1].header
 
 for i in range(1, 10):
     print(i, f[i].header.get('TWAVE1'), f[i].header.get('TDESC'))
-# plt.imshow(f[1].data[0], vmin=0, vmax=10)
-#
-# plt.show()
+plt.imshow(f[1].data[0], vmin=0, vmax=10)
+
+plt.show()
 
 

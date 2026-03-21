@@ -36,8 +36,14 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11500, 11750, 11900, 12050]
-position_solar_y = 257
+time_seconds = [6900, 6950, 7000, 7050]
+position_solar_y = 261
+
+# [6900, 6950, 7000, 7050]
+# [9600, 9700, 9750, 9800]
+# [11500, 11750, 11900, 12050]
+
+
 
 x_lim = 450
 zoom = 50
@@ -348,8 +354,8 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 
 def plot_combined_fig():
-    fig = plt.figure(figsize=(18, 16))
-    fig.text(0.5, 0.95, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+    fig = plt.figure(figsize=(20, 10))
+    fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
     gs = gridspec.GridSpec(9, 4, figure=fig, height_ratios=[
         1, 1, 0.3,
         1, 1, 0.3,
@@ -418,7 +424,7 @@ def plot_combined_fig():
                 ha='right', va='top',
                 fontsize=fs - 3)
 
-            ax.yaxis.set_major_locator(FixedLocator([0, 0.5, 1]))
+            ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
             if i == 0:
                 ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
 
@@ -460,7 +466,7 @@ def plot_combined_fig():
 
         if i == 2:
             ax_q.set_xlabel("Time (s)", fontsize=fs)
-
+    fig.align_ylabels()
     save_path = os.path.join(output_loc, f"line_profiles_{time_seconds}_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
