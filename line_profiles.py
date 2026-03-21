@@ -21,8 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import asdf
 from get_quartiles import get_quartiles
-
-from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, FixedLocator)
 
 
 event = '20230503_072923'
@@ -350,9 +349,13 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 def plot_combined_fig():
     fig = plt.figure(figsize=(18, 18))
-    fig.suptitle('Doppler Velocity (km/s)', fontsize=fs)
-    gs = gridspec.GridSpec(6, 4, figure=fig, hspace=0.14, wspace=0.05)
-
+    fig.text(0.5, 0.95, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+    gs = gridspec.GridSpec(9, 4, figure=fig, height_ratios=[
+        1, 1, 0.3,
+        1, 1, 0.3,
+        1, 1, 0.3,
+    ], hspace=0.14, wspace=0.05)
+    plt.subplots_adjust(top=0.92)
 
     line_info = [
         ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
@@ -380,7 +383,7 @@ def plot_combined_fig():
 
     # TOP ROW
         for j, t_idx in enumerate(t_indices):
-            ax = fig.add_subplot(gs[i * 2, j])
+            ax = fig.add_subplot(gs[i * 3, j])
 
             intensity = data[t_idx, pos_idx]
 
@@ -397,15 +400,25 @@ def plot_combined_fig():
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
 
-            #if j == 0:
-                #ax.set_title(f"{title}", loc='left', fontsize=fs - 3)
+            if j == 3:
+                ax2 = ax.twinx()
+                ax2.set_ylabel(f"{title}", fontsize=fs)
+                ax2.set_yticks([])
+
 
             if j != 0:
                 ax.set_yticklabels([' '])
 
-            #ax.set_title(f"t={time_seconds[j]}s", loc='right', fontsize=fs-3)
+            if j == 0:
+                ax.set_ylabel('Intensity', fontsize=fs)
 
+            ax.text(
+                0.98, 0.95, f"t = {time_seconds[j]} s",
+                transform=ax.transAxes,
+                ha='right', va='top',
+                fontsize=fs - 3)
 
+            ax.yaxis.set_major_locator(FixedLocator([0, 0.5, 1]))
             if i == 0:
                 ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
 
@@ -414,8 +427,8 @@ def plot_combined_fig():
 
 
 
-        # BOTTOM ROW QUARTILES
-        ax_q = fig.add_subplot(gs[i * 2 + 1, :])
+    # BOTTOM ROW QUARTILES
+        ax_q = fig.add_subplot(gs[i * 3 + 1, :])
 
         im = ax_q.imshow(
             q_map.data,
@@ -428,11 +441,13 @@ def plot_combined_fig():
         # Mark selected points
         for t in time_seconds:
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
+            ax_q.scatter(t, position_solar_y,  marker='x', c='white', s=300, linewidths=6)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
         ax_q.set_ylim(position_solar_y - 20, position_solar_y + 20)
 
-        ax_q.set_ylabel(f"{title}", fontsize=fs)
+        ax_q.set_ylabel('Solar Y', fontsize=fs)
+
 
         if i == 2:
             ax_q.set_xlabel("Time (s)", fontsize=fs)
