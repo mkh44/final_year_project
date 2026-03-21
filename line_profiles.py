@@ -37,7 +37,7 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_seconds = [11500, 11750, 11900, 12050]
-position_solar_y = 257
+position_solar_y = 261
 
 x_lim = 450
 zoom = 250
@@ -430,17 +430,26 @@ def plot_combined_fig():
     # BOTTOM ROW QUARTILES
         ax_q = fig.add_subplot(gs[i * 3 + 1, :])
 
+        # Defining common extent
+        global_max = np.nanmax([
+            np.nanpercentile(si_q_int_map.data, 100 - alpha),
+            np.nanpercentile(cii_q_int_map.data, 100 - alpha),
+            np.nanpercentile(mg_q_int_map.data, 100 - alpha)])
+
+        global_min = 0
+        norm = colors.Normalize(vmin=global_min, vmax=global_max)
+
         im = ax_q.imshow(
             q_map.data,
             origin='lower',
             aspect='auto',
             cmap='Reds_r',
-            extent=[t_arr.min(), t_arr.max(), slit_pos.min(), slit_pos.max()]
+            extent=[t_arr.min(), t_arr.max(), slit_pos.min(), slit_pos.max()], norm=norm
         )
 
         # Mark selected points
         for t in time_seconds:
-           # ax_q.scatter(t, position_solar_y,  marker='x', c='cyan', s=310, lw=6)
+            ax_q.scatter(t, position_solar_y,  marker='x', c='white', s=310, lw=6)
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
