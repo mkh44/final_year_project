@@ -440,8 +440,8 @@ def plot_combined_fig():
 
         # Mark selected points
         for t in time_seconds:
+            ax_q.scatter(t, position_solar_y,  marker='x', c='white', s=300, lw=6)
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
-            ax_q.scatter(t, position_solar_y,  marker='x', c='white', s=300, linewidths=6)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
         ax_q.set_ylim(position_solar_y - 20, position_solar_y + 20)
