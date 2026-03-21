@@ -37,10 +37,10 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 lines = [5, 1, 9]
 time_seconds = [11500, 11750, 11900, 12050]
-position_solar_y = 261
+position_solar_y = 257
 
 x_lim = 450
-zoom = 250
+zoom = 50
 fs = 16 # font size
 
 def time_to_index(time_array, target_time):
@@ -348,7 +348,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 
 
 def plot_combined_fig():
-    fig = plt.figure(figsize=(18, 18))
+    fig = plt.figure(figsize=(18, 16))
     fig.text(0.5, 0.95, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
     gs = gridspec.GridSpec(9, 4, figure=fig, height_ratios=[
         1, 1, 0.3,
@@ -449,7 +449,7 @@ def plot_combined_fig():
 
         # Mark selected points
         for t in time_seconds:
-            ax_q.scatter(t, position_solar_y,  marker='x', c='white', s=310, lw=6)
+
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
