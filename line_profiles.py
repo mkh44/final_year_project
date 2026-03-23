@@ -36,8 +36,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [6900, 6950, 7000, 7050]
-position_solar_y = 261
+time_seconds = [9700, 9750, 9800, 9850]
+position_solar_y = 267
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -356,6 +356,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 def plot_combined_fig():
     fig = plt.figure(figsize=(20, 10))
     fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+    fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs-4)
     gs = gridspec.GridSpec(9, 4, figure=fig, height_ratios=[
         1, 1, 0.3,
         1, 1, 0.3,
@@ -430,6 +431,7 @@ def plot_combined_fig():
 
             if i != 0:
                 ax.set_xticklabels([' '])
+                ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
 
 
 
@@ -453,13 +455,14 @@ def plot_combined_fig():
             extent=[t_arr.min(), t_arr.max(), slit_pos.min(), slit_pos.max()], norm=norm
         )
 
+
         # Mark selected points
         for t in time_seconds:
 
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
 
         ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
-        ax_q.set_ylim(position_solar_y - 20, position_solar_y + 20)
+        ax_q.set_ylim(position_solar_y - 20, position_solar_y +20)
 
         ax_q.set_ylabel('Solar Y', fontsize=fs)
 
@@ -472,3 +475,5 @@ def plot_combined_fig():
     plt.show()
 
 plot_combined_fig()
+
+
