@@ -20,7 +20,9 @@ from scipy.constants import c
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import asdf
+from datetime import datetime, timedelta
 from get_quartiles import get_quartiles
+import matplotlib.dates as mdates
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, FixedLocator)
 
 
@@ -89,7 +91,7 @@ def get_line_profiles(line, expected_wl):
 # Getting time and height in index
     cadence = hdr['STEPT_AV']
     time_array = np.arange(data_arr.shape[0]) * cadence
-
+    clock_times = np.array([start_time + timedelta(seconds=t) for t in time_array])
     wavelength = get_wavelength(title, line)
 
     v_dopp = ((wavelength - expected_wl) / expected_wl) * (c / 1e3)
@@ -112,182 +114,7 @@ def get_line_profiles(line, expected_wl):
     for t_idx in t_indices:
         profiles.append(data_arr[t_idx, pos_idx, :])
 
-    return v_dopp, profiles
-
-# # Defining limits
-#
-#     # y (intensity)
-#     y_max = max(si_data_arr[time_idx, pos_idx].max(),
-#                 cii_data_arr[time_idx, pos_idx].max(),
-#                 mg_data_arr[time_idx, pos_idx].max())
-#     y_lim = y_max + y_max*0.05
-#
-#
-# # Plotting Doppler velocity
-#     fig, ax = plt.subplots(3, 1, sharex = True, figsize=(6, 6))
-#
-#
-#     # Masks for colour difference on plot
-#     si_redshift = si_v_dopp >= 0
-#     si_blueshift = si_v_dopp <= 0
-#
-#     cii_redshift = cii_v_dopp >= 0
-#     cii_blueshift = cii_v_dopp <= 0
-#
-#     mg_redshift = mg_v_dopp >= 0
-#     mg_blueshift = mg_v_dopp <= 0
-#
-#     #Si IV 1403 plot
-#     ax[0].plot(si_v_dopp, si_data_arr[time_idx, pos_idx], color='k')
-#     ax[0].plot(si_v_dopp[si_redshift], si_data_arr[time_idx, pos_idx][si_redshift], color='red')
-#     ax[0].plot(si_v_dopp[si_blueshift], si_data_arr[time_idx, pos_idx][si_blueshift], color='blue')
-#
-#     # Set Si IV axis labels abd tickmarks
-#     ax[0].set_xlabel(' ')
-#     ax[0].set_ylim(0, y_lim)
-#     ax[0].set_xlim(-x_lim, x_lim)
-#     ax[0].xaxis.set_minor_locator(MultipleLocator(10))
-#
-#     # Second Si IV axis for titles
-#     ax0 = ax[0].twinx()
-#     ax0.set_yticks([])
-#     ax0.set_ylim(0, y_lim)
-#     ax0.set_yticklabels([])
-#     ax0.set_ylabel(f'{si_title}', fontsize=fs)
-#
-#     plt.title(f'Time: {actual_time:.1f} s, Height: {position_solar_y} arcsec', loc='right', fontsize=fs)
-#
-#     # Cii plot
-#     ax[1].plot(cii_v_dopp, cii_data_arr[time_idx, pos_idx], color='k')
-#     ax[1].plot(cii_v_dopp[cii_redshift], cii_data_arr[time_idx, pos_idx][cii_redshift], color='red')
-#     ax[1].plot(cii_v_dopp[cii_blueshift], cii_data_arr[time_idx, pos_idx][cii_blueshift], color='blue')
-#
-#     # Set Cii axis limits and labels
-#     ax[1].set_xlim(-x_lim, x_lim)
-#     ax[1].xaxis.set_minor_locator(MultipleLocator(10))
-#     ax[1].set_ylim(0, y_lim)
-#     ax[1].set_xlabel(' ')
-#     ax[1].set_ylabel("Intensity", fontsize=fs)
-#
-#     # Seconds Cii axis for titles
-#     ax1 = ax[1].twinx()
-#     ax1.set_yticks([])
-#     ax1.set_yticklabels([])
-#     ax1.set_ylabel(f'{cii_title}', fontsize=fs)
-#
-#     # Mg plot
-#     ax[2].plot(mg_v_dopp, mg_data_arr[time_idx, pos_idx], color='k')
-#     ax[2].plot(mg_v_dopp[mg_redshift], mg_data_arr[time_idx, pos_idx][mg_redshift], color='red')
-#     ax[2].plot(mg_v_dopp[mg_blueshift], mg_data_arr[time_idx, pos_idx][mg_blueshift], color='blue')
-#
-#     # Set Mg axis limits and labels
-#     ax[2].set_ylabel(' ')
-#     ax[2].set_xlabel('Doppler Velocity (km/s)', fontsize=fs)
-#     ax[2].set_ylim(0, y_lim)
-#     ax[2].set_xlim(-x_lim, x_lim)
-#     ax[2].xaxis.set_minor_locator(MultipleLocator(10))
-#
-#     # Second Mg axis for titles
-#     ax2 = ax[2].twinx()
-#     ax2.set_yticks([])
-#     ax2.set_yticklabels([])
-#     ax2.set_ylabel(f'{mg_title}', fontsize=fs)
-#
-#     # Dotted line at x=0
-#     ax[0].axvline(0, color='k', linestyle='dashed', linewidth=1)
-#     ax[1].axvline(0, color='k', linestyle='dashed', linewidth=1)
-#     ax[2].axvline(0, color='k', linestyle='dashed', linewidth=1)
-#
-#     # Saving plot and displaying
-#     save_path = os.path.join(output_loc, f"doppler_profiles_{actual_time}s_{position_solar_y}.png")
-#     plt.savefig(save_path, bbox_inches='tight')
-#     plt.show()
-#     plt.close(fig)
-
-
-# Plotting Intensity quartiles reference
-#def plot_iris_sns_quartile_fits(si_title, cii_title, mg_title, event, main_header, time):
-
-
-    # Defining common extent
-    global_max = np.nanmax([
-        np.nanpercentile(si_q_int_map.data, 100 - alpha),
-        np.nanpercentile(cii_q_int_map.data, 100 - alpha),
-        np.nanpercentile(mg_q_int_map.data, 100 - alpha)])
-
-    global_min = 0
-    norm = colors.Normalize(vmin=global_min, vmax=global_max)
-
-
-
-# PLOTTING
-    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 5))
-
-# Si plotting
-    im0 = ax[0].imshow(si_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
-        extent=[si_t_array.min(), si_t_array.max(), si_slit_pos.min(),
-        si_slit_pos.max()], norm=norm)
-    ax[0].set_ylabel(' ')
-
-    # second Si axis for label
-    ax_0 = ax[0].twinx()
-    ax_0.set_ylabel(si_title, fontsize=fs)
-    ax_0.set_yticks([])
-
-    plt.title(f'Height: {position_solar_y}', loc='right', fontsize=fs)
-
-
-# C ii plotting
-    im1 = ax[1].imshow(cii_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
-        extent=[cii_t_array.min(), cii_t_array.max(), cii_slit_pos.min(),
-        cii_slit_pos.max()], norm=norm)
-
-    ax[1].set_ylabel("Solar Y", fontsize=fs)
-    ax[1].set_title(' ')
-
-    #second cii axis for label
-    ax_1 = ax[1].twinx()
-    ax_1.set_ylabel(cii_title, fontsize=fs)
-    ax_1.set_yticks([])
-
-
-# Mg ii plotting
-    im2 = ax[2].imshow(mg_q_int_map.data, origin='lower', cmap='Reds_r', aspect='auto',
-        extent=[mg_t_array.min(), mg_t_array.max(), mg_slit_pos.min(), mg_slit_pos.max()],
-                       norm=norm)
-
-    ax[2].set_ylabel(" ")
-    ax[2].set_xlabel("Time (s)", fontsize=fs)
-    ax[2].set_title(' ')
-
-    # second mg axis for label
-    ax_2 = ax[2].twinx()
-    ax_2.set_ylabel(mg_title, fontsize=fs)
-    ax_2.set_yticks([])
-
-    # Defining profile pixel
-
-    target_y = position_solar_y
-    max_target_t = max(time)
-    min_target_t = min(time)
-
-    for time in time_seconds:
-        for axis in ax:
-            axis.scatter(time, target_y, marker='x', s=250, c='k', lw=3)
-    for axis in ax:
-        axis.set_xlim(min_target_t - zoom, max_target_t + zoom)
-        axis.set_ylim(target_y - 20, target_y + 20)
-
-# Colorbar
-    cbar = fig.colorbar(im2, ax=ax, orientation='vertical', pad=0.12, fraction=0.05)
-    cbar.set_label("Integrated Intensity", fontsize=fs)
-    tick_locator = ticker.LinearLocator(numticks=4)
-    cbar.locator = tick_locator
-    cbar.update_ticks()
-
-    save_path = os.path.join(output_loc, f"quartile_maps_{event}_{time_seconds}_{position_solar_y}.png")
-    plt.savefig(save_path, bbox_inches="tight")
-    plt.show()
+    return v_dopp, profiles, clock_times
 
 
 
@@ -296,6 +123,11 @@ def get_line_profiles(line, expected_wl):
 # Get headers
 hdul = fits.open(fits_file)
 hdr = hdul[0].header
+
+# Get real time
+start_time = datetime.fromisoformat(hdr['STARTOBS'])
+
+
 
 # Get line names
 si_title = hdr['TDESC' + str(lines[0])]
@@ -377,7 +209,7 @@ def plot_combined_fig():
         header = hdul[lines[line_idx]].header
         wavelength = get_wavelength(header, line_idx)
 
-        v_dopp, profiles = get_line_profiles(line_idx, rest_wave)
+        v_dopp, profiles, clock_times = get_line_profiles(line_idx, rest_wave)
 
 
         # Time indices
@@ -420,7 +252,7 @@ def plot_combined_fig():
                 ax.set_ylabel('Intensity', fontsize=fs)
 
             ax.text(
-                0.98, 0.95, f"t = {time_seconds[j]} s",
+                0.98, 0.95, f"{clock_times[t_idx].strftime('%H:%M:%S')}",
                 transform=ax.transAxes,
                 ha='right', va='top',
                 fontsize=fs - 3)
@@ -447,24 +279,34 @@ def plot_combined_fig():
         global_min = 0
         norm = colors.Normalize(vmin=global_min, vmax=global_max)
 
+        t_arr_clock = np.array([start_time + timedelta(seconds=t) for t in t_arr])
+
+
         im = ax_q.imshow(
             q_map.data,
             origin='lower',
             aspect='auto',
             cmap='Reds_r',
-            extent=[t_arr.min(), t_arr.max(), slit_pos.min(), slit_pos.max()], norm=norm
+            extent=[t_arr_clock.min(), t_arr_clock.max(), slit_pos.min(), slit_pos.max()], norm=norm
         )
 
 
         # Mark selected points
-        for t in time_seconds:
+        selected_times = [clock_times[idx] for idx in t_indices]
+        for t in selected_times:
 
             ax_q.scatter(t, position_solar_y, marker='x', c='k', s=300, lw=4)
 
-        ax_q.set_xlim(min(time_seconds) - zoom, max(time_seconds) + zoom)
+        # Set axis limits
+        min_t = min(selected_times)
+        max_t = max(selected_times)
+        ax_q.set_xlim(min_t - timedelta(seconds=zoom), max_t + timedelta(seconds=zoom))
         ax_q.set_ylim(position_solar_y - 20, position_solar_y +20)
 
         ax_q.set_ylabel('Solar Y', fontsize=fs)
+        ax_q.xaxis_date()
+        ax_q.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        fig.autofmt_xdate()
 
 
         if i == 2:

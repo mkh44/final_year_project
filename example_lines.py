@@ -5,6 +5,8 @@ from astropy.wcs import WCS
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec
 import os
+from datetime import timedelta
+from datetime import datetime as dt
 
 
 
@@ -17,12 +19,22 @@ time_seconds = [9795, 9820, 9850, 9900]
 position_solar_y = 266
 output = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\sji"
 
+
+
 hdul = fits.open(sji_filepath)
 hdul.info()
 data = hdul[0].data
 hdr = hdul[0].header
-cadence = hdr.get('CDELT3')
 
+#times real
+cadence = hdr.get('CDELT3')
+start_time_str = hdr['STARTOBS']
+start_time = dt.fromisoformat(start_time_str)
+clock_times = [start_time + timedelta(seconds=t) for t in time_seconds]
+time_labels = [ct.strftime('%H:%M:%S') for ct in clock_times]
+
+
+# headers
 cdelt2 = hdr['CDELT2']
 crval2 = hdr['CRVAL2']
 crpix2 = hdr['CRPIX2']
@@ -70,7 +82,7 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
 
     ax.set_xlabel(" ")
-    ax.text(0.1, 0.15, f"{t}s, {position_solar_y}\"", color='white')
+    ax.text(0.1, 0.2, f"{time_labels[i]}, {position_solar_y}\"", color='white', fontsize= 12)
 
 fig.text(0.48,0.01, "Solar X (arcsec)")
 
@@ -79,4 +91,5 @@ plt.savefig(save_paths, bbox_inches="tight")
 
 plt.show()
 
-
+print(time_labels)
+print(start_time_str)
