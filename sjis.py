@@ -15,11 +15,11 @@ def time_to_index(time_array, target_time):
 
 sji_filepath = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\iris_l2_20230503_072923_4204700135_SJI_2796_t000.fits"
 
-time_seconds = [11700, 11800, 11900, 12000]
-position_solar_y = 253
+time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
+position_solar_y = 259
+
 
 output = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\sji"
-
 
 
 hdul = fits.open(sji_filepath)
@@ -56,18 +56,21 @@ frame_idx = sji_indices[0]
 vmin = 0
 vmax = np.nanpercentile(np.stack(frames), 99)
 
-
 n = len(time_seconds)
 
-fig = plt.figure(figsize=(16, 4))
-gs = GridSpec(1, n, figure=fig, wspace=0)
+
+
+fig = plt.figure(figsize=(18, 10))
+gs = GridSpec(2, 4, figure=fig, wspace=0.07, hspace=0.07)
+
+
 
 for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     wcs_2d = wcs.slice([idx, slice(None), slice(None)])
 
 
-    ax = fig.add_subplot(gs[0, i], projection=wcs_2d)
+    ax = fig.add_subplot(gs[i // 4, i%4], projection=wcs_2d)
 
     img = data[idx, :, :]
 
@@ -75,22 +78,24 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
     ax.axhline(y_pix, color='white', linestyle='--', linewidth=2)
     ax.axvline(crpix2 - 9, color='white', linewidth=3)
 
-    if i == 0:
-        ax.set_ylabel("Solar Y (arcsec)")
+
+
+    if i == 0 or i== 4:
+        ax.coords[1].set_ticklabel_visible(True)
     else:
-        ax.set_ylabel(' ')
         ax.coords[1].set_ticklabel_visible(False)
 
-
+    ax.set_ylabel(' ')
     ax.set_xlabel(" ")
-    ax.text(0.1, 0.2, f"{time_labels[i]}, {position_solar_y}\"", color='white', fontsize= 12)
+    ax.text(0.1, 2, f"{time_labels[i]}", color='white', fontsize= 12)
+    ax.text(0.1, 15, f"{position_solar_y}\"", color='white', fontsize=12)
 
-fig.text(0.48,0.01, "Solar X (arcsec)")
+fig.text(0.48, 0.06,"Solar x (arcsec)")
+fig.text(0.09, 0.48, 'Solar y (arcsec)', rotation=90)
+
 
 save_paths = os.path.join(output, f"SJI_{time_seconds}_{position_solar_y}.png")
 plt.savefig(save_paths, bbox_inches="tight")
 
 plt.show()
 
-print(time_labels)
-print(start_time_str)

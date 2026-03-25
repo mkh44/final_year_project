@@ -38,8 +38,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11700, 11800, 11900, 12000]
-position_solar_y = 253
+time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
+position_solar_y = 259
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -86,6 +86,7 @@ def get_int_map(file):
         else:
             raise KeyError("No intensity map found in ASDF file")
 
+
 def get_line_profiles(line, expected_wl):
 # Getting pixel array
     data_arr = get_data_arr(line)
@@ -117,15 +118,17 @@ def get_line_profiles(line, expected_wl):
 
     return v_dopp, profiles
 
+n = len(time_seconds)
+
 def plot_combined_fig():
-    fig = plt.figure(figsize=(20, 10))
+    fig = plt.figure(figsize=(18, 14))
     fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
     fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs-4)
-    gs = gridspec.GridSpec(9, 4, figure=fig, height_ratios=[
+    gs = gridspec.GridSpec(9, n, figure=fig, height_ratios=[
         1, 1, 0.3,
         1, 1, 0.3,
         1, 1, 0.3,
-    ], hspace=0.14, wspace=0.05)
+    ], hspace=0.1, wspace=0.05)
     plt.subplots_adjust(top=0.92)
 
     line_info = [
@@ -174,22 +177,29 @@ def plot_combined_fig():
             else:
                 ax.set_yticklabels([' '])
 
-            ax.text(
-                0.98, 0.95, f"{time_labels[t_idx]}",
+            if i ==2:
+                ax.text(
+                0.05, 0.95, f"{time_labels[t_idx]}",
                 transform=ax.transAxes,
-                ha='right', va='top',
+                ha='left', va='top',
                 fontsize=fs - 3)
+            else:
+                ax.text(
+                    0.98, 0.95, f"{time_labels[t_idx]}",
+                    transform=ax.transAxes,
+                    ha='right', va='top',
+                    fontsize=fs - 3)
 
             ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
             if i == 0:
-                ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+                ax.tick_params(top=True, labeltop=True, bottom=True, labelbottom=False)
 
             else:
                 ax.set_xticklabels([' '])
-                ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
+                ax.tick_params(top=True, labeltop=False, bottom=True, labelbottom=False)
 
         # Twin axis for line names on right
-            if j == 3:
+            if j == n-1:
                 ax2 = ax.twinx()
                 ax2.set_ylabel(f"{title}", fontsize=fs)
                 ax2.set_yticks([])
@@ -227,7 +237,7 @@ def plot_combined_fig():
         min_x = seconds_to_realtime((min(time_seconds) - zoom), start_time)
         max_x = seconds_to_realtime((max(time_seconds) + zoom), start_time)
         ax_q.set_xlim(min_x, max_x)
-        ax_q.set_ylim(position_solar_y - 20, position_solar_y +20)
+        ax_q.set_ylim(position_solar_y - 20, 280)
 
         ax_q.set_ylabel('Solar Y', fontsize=fs)
         # ax_q.xaxis_date()
@@ -236,8 +246,7 @@ def plot_combined_fig():
         if i == 2:
             ax_q.tick_params(top=False, labeltop=False, bottom=True, labelbottom=True)
 
-        if i == 2:
-            ax_q.set_xlabel("Time (s)", fontsize=fs)
+    fig.text(0.5, 0.1, "Time (s)", fontsize=fs)
     fig.align_ylabels()
     save_path = os.path.join(output_loc, f"line_profiles_{time_seconds}_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
