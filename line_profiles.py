@@ -38,8 +38,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
-position_solar_y = 259
+time_seconds = [11700, 11800, 11900, 12000]
+position_solar_y = 253
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -121,7 +121,7 @@ def get_line_profiles(line, expected_wl):
 n = len(time_seconds)
 
 def plot_combined_fig():
-    fig = plt.figure(figsize=(18, 14))
+    fig = plt.figure(figsize=(18, 8))
     fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
     fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs-4)
     gs = gridspec.GridSpec(9, n, figure=fig, height_ratios=[
@@ -241,12 +241,12 @@ def plot_combined_fig():
 
         ax_q.set_ylabel('Solar Y', fontsize=fs)
         # ax_q.xaxis_date()
-        # ax_q.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        ax_q.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
         # fig.autofmt_xdate()
         if i == 2:
             ax_q.tick_params(top=False, labeltop=False, bottom=True, labelbottom=True)
 
-    fig.text(0.5, 0.1, "Time (s)", fontsize=fs)
+    fig.text(0.5, 0.1, "Time", fontsize=fs)
     fig.align_ylabels()
     save_path = os.path.join(output_loc, f"line_profiles_{time_seconds}_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
