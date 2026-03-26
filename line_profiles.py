@@ -7,6 +7,8 @@
 import pdb
 import glob
 import os
+
+from astropy.wcs.docstrings import crval
 from matplotlib import ticker, gridspec
 import datetime as dt
 import numpy as np
@@ -38,8 +40,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11700, 11800, 11900, 12000]
-position_solar_y = 253
+time_seconds = [491.4, 10796.45]
+position_solar_y = 214.6
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -68,7 +70,6 @@ def get_wavelength(header, line_index):
     wavelength = crval + (np.arange(n_wave) - (crpix - 1)) * cdelt
     return wavelength
 
-
 # Defining line titles
 def get_int_map(file):
     with asdf.open(file) as af:
@@ -86,6 +87,13 @@ def get_int_map(file):
         else:
             raise KeyError("No intensity map found in ASDF file")
 
+def get_velocity_map(file):
+    with asdf.open(file) as af:
+        if 'q_dopp_map' in af.tree:
+            return af.tree['q_dopp_map']
+
+        else:
+            raise KeyError("No velocity map found")
 
 def get_line_profiles(line, expected_wl):
 # Getting pixel array
