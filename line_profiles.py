@@ -40,8 +40,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [491.4, 10796.45]
-position_solar_y = 214.6
+time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
+position_solar_y = 268
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -166,7 +166,6 @@ def plot_combined_fig():
             ax = fig.add_subplot(gs[i * 3, j])
 
             intensity = data[t_idx, pos_idx]
-
             intensity_norm = intensity / max_intensity
 
             red = v_dopp >= 0
@@ -179,6 +178,21 @@ def plot_combined_fig():
             ax.axvline(0, linestyle='--', color='k', linewidth=1)
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
+
+            # # Line peak
+            # threshold = 0.9 * intensity.max()
+            # valid = intensity > threshold
+            #
+            # # Compute centroid
+            # v_centroid = np.sum(v_dopp[valid] * intensity[valid]) / np.sum(intensity[valid])
+            # ax.text(
+            #     0.95, 0.85, f"{v_centroid:.1f} km/s",
+            #     transform=ax.transAxes,
+            #     ha='right', va='top',
+            #     fontsize=fs - 3,
+            #     color='green'
+            # )
+            # ax.axvline(v_centroid, linestyle='--', color='green', linewidth=1)
 
             if j == 0:
                 ax.set_ylabel('Intensity', fontsize=fs)
