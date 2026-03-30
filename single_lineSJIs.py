@@ -8,14 +8,14 @@ import os
 from datetime import timedelta
 from datetime import datetime as dt
 
-
+fs = 18
 
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))
 
 sji_filepath = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\iris_l2_20230503_072923_4204700135_SJI_2796_t000.fits"
 
-time_seconds = [11575, 11600, 11750]
+time_seconds = [11600, 11750, 11850]
 position_solar_y = 270
 
 
@@ -61,7 +61,7 @@ n = len(time_seconds)
 
 
 fig = plt.figure(figsize=(18, 10))
-gs = GridSpec(2, 4, figure=fig, wspace=0.07, hspace=0.07)
+gs = GridSpec(1, n, figure=fig, wspace=0.07, hspace=0.07)
 
 
 
@@ -79,19 +79,24 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
     ax.axvline(crpix2 - 9, color='white', linewidth=3)
 
 
+    ax.coords[0].tick_params(axis='x', labelsize=fs)
 
-    if i == 0 or i== 4:
+    if i == 0:
         ax.coords[1].set_ticklabel_visible(True)
+        ax.coords[1].tick_params(axis='y', labelsize=fs)
+        ax.set_ylabel('Solar y (arcsec)', fontsize=fs)
     else:
         ax.coords[1].set_ticklabel_visible(False)
 
-    ax.set_ylabel(' ')
-    ax.set_xlabel(" ")
-    ax.text(0.1, 2, f"{time_labels[i]}", color='white', fontsize= 12)
-    ax.text(0.1, 15, f"{position_solar_y}\"", color='white', fontsize=12)
+    if i == 1:
+        ax.set_xlabel("Solar x (arcsec)", fontsize=fs)
+    else:
+        ax.set_xlabel(' ')
 
-fig.text(0.48, 0.06,"Solar x (arcsec)")
-fig.text(0.09, 0.48, 'Solar y (arcsec)', rotation=90)
+    ax.text(0.1, 2, f"{time_labels[i]}", color='white', fontsize= fs)
+    ax.text(0.1, 15, f"{position_solar_y}\"", color='white', fontsize=fs)
+
+
 
 
 save_paths = os.path.join(output, f"SJI_{time_seconds}_{position_solar_y}.png")
