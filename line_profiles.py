@@ -35,8 +35,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [12000, 15500]
-position_solar_y = 260
+time_seconds = [11500, 11550, 11575, 11600, 11625, 11650, 11700, 11750]
+position_solar_y = 270
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -46,7 +46,7 @@ position_solar_y = 260
 z = 10
 x_lim = 450
 zoom = 50
-fs = 15 # font size
+fs = 22 # font size
 
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))
@@ -124,14 +124,14 @@ def get_line_profiles(line, expected_wl):
 n = len(time_seconds)
 
 def plot_combined_fig():
-    fig = plt.figure(figsize=(12,10))
+    fig = plt.figure(figsize=(20,14))
     fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
     fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
     gs = gridspec.GridSpec(9, n, figure=fig, height_ratios=[
-        1, 1, 0.3,
-        1, 1, 0.3,
-        1, 1, 0.3,
-    ], hspace=0.2, wspace=0.05)
+        1, 1, 0.08,
+        1, 1, 0.08,
+        1, 1, 0.08,
+    ], hspace=0.22, wspace=0.05)
     plt.subplots_adjust(top=0.92)
 
     line_info = [
@@ -174,23 +174,10 @@ def plot_combined_fig():
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
 
-            # # Line peak
-            # threshold = 0.9 * intensity.max()
-            # valid = intensity > threshold
-            #
-            # # Compute centroid
-            # v_centroid = np.sum(v_dopp[valid] * intensity[valid]) / np.sum(intensity[valid])
-            # ax.text(
-            #     0.95, 0.85, f"{v_centroid:.1f} km/s",
-            #     transform=ax.transAxes,
-            #     ha='right', va='top',
-            #     fontsize=fs - 3,
-            #     color='green'
-            # )
-            # ax.axvline(v_centroid, linestyle='--', color='green', linewidth=1)
 
             if j == 0:
-                ax.set_ylabel('Intensity', fontsize=fs-2)
+                ax.set_ylabel('Intensity', fontsize=fs-3)
+                ax.tick_params(labelsize=fs-5)
             else:
                 ax.set_yticklabels([' '])
 
@@ -208,12 +195,14 @@ def plot_combined_fig():
                     fontsize=fs - 3)
 
             ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
+
             if i == 0:
-                ax.tick_params(top=True, labeltop=True, bottom=True, labelbottom=False)
+                ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+                ax.tick_params(labelsize=fs - 5)
 
             else:
                 ax.set_xticklabels([' '])
-                ax.tick_params(top=True, labeltop=False, bottom=True, labelbottom=False)
+                ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
 
         # Twin axis for line names on right
             if j == n-1:
@@ -226,9 +215,9 @@ def plot_combined_fig():
 
         # Defining common extent
         global_max = np.nanmax([
-            np.nanpercentile(si_q_int_map.data, 99),
+            np.nanpercentile(si_q_int_map.data, 99.9),
             np.nanpercentile(cii_q_int_map.data, 99,),
-            np.nanpercentile(mg_q_int_map.data, 99)])
+            np.nanpercentile(mg_q_int_map.data, 99.9)])
 
         global_min = 0
         norm = colors.Normalize(vmin=global_min, vmax=global_max)
@@ -256,14 +245,19 @@ def plot_combined_fig():
         ax_q.set_xlim(min_x, max_x)
         ax_q.set_ylim(position_solar_y - 20, 280)
 
-        ax_q.set_ylabel('Solar Y', fontsize=fs-2)
+        ax_q.set_ylabel('Solar y', fontsize=fs-3)
+        ax_q.tick_params(labelsize=fs-5)
         # ax_q.xaxis_date()
         ax_q.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
         # fig.autofmt_xdate()
+
         if i == 2:
             ax_q.tick_params(top=False, labeltop=False, bottom=True, labelbottom=True)
+            ax_q.tick_params(labelsize=fs-5)
+        else:
+            ax_q.tick_params(top=False, labeltop=False, bottom=True, labelbottom=False)
 
-    fig.text(0.5, 0.1, "Time", fontsize=fs)
+    fig.text(0.5, 0.09, "Time", fontsize=fs)
     fig.align_ylabels()
     save_path = os.path.join(output_loc, f"line_profiles_{time_seconds}_{position_solar_y}.png")
     plt.savefig(save_path, bbox_inches="tight")
@@ -402,9 +396,7 @@ def plot_wl(lines, time):
     ax[2].axvline(lambda_mg, color='k', linestyle='--')
     plt.show()
 
-# if __name__ == "__main__":
-#     plot_combined_fig()
+if __name__ == "__main__":
+    plot_combined_fig()
 
-#plot_wl(lines, 7049)
-
-print(mg_title, si_title, cii_title)
+#plot_wl(lines, [11500, 11550, 11575, 11600, 11625, 11650, 11700, 11750])
