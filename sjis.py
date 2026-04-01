@@ -8,21 +8,20 @@ import os
 from datetime import timedelta
 from datetime import datetime as dt
 
-
+fs = 18
 
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))
 
 sji_filepath = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\iris_l2_20230503_072923_4204700135_SJI_2796_t000.fits"
 
-time_seconds = [11575, 11600, 11750]
-position_solar_y = 270
+time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
+position_solar_y = 268
 
 
 output = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\sji"
 
-iris_window = os.path.basename(sji_filepath).replace(r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs", "").replace('iris_l2_20230503_072923_4204700135_SJI_', '').replace('_t000.fits', '')
-print(iris_window)
+
 hdul = fits.open(sji_filepath)
 hdul.info()
 data = hdul[0].data
@@ -83,16 +82,22 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     if i == 0 or i== 4:
         ax.coords[1].set_ticklabel_visible(True)
+        ax.coords[1].tick_params(axis='y', labelsize=fs)
     else:
         ax.coords[1].set_ticklabel_visible(False)
+    if i >= 4:
+        ax.coords[0].set_ticklabel_visible(True)
+        ax.coords[0].tick_params(axis='x', labelsize=fs)
+    else:
+        ax.coords[0].set_ticklabel_visible(False)
 
     ax.set_ylabel(' ')
     ax.set_xlabel(" ")
-    ax.text(0.1, 2, f"{time_labels[i]}", color='white', fontsize= 12)
-    ax.text(0.1, 15, f"{position_solar_y}\"", color='white', fontsize=12)
-fig.text(0.3, 0.9, f'{iris_window}')
-fig.text(0.48, 0.06,"Solar x (arcsec)")
-fig.text(0.09, 0.48, 'Solar y (arcsec)', rotation=90)
+    ax.text(3, 2, f"{time_labels[i]}", color='white', fontsize= fs)
+    ax.text(3, 16, f"{position_solar_y}\"", color='white', fontsize=fs)
+
+fig.text(0.45, 0.04,"Solar x (arcsec)", fontsize=fs)
+fig.text(0.06, 0.45, 'Solar y (arcsec)', rotation=90, fontsize=fs)
 
 
 save_paths = os.path.join(output, f"SJI_{time_seconds}_{position_solar_y}.png")

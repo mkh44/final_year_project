@@ -35,8 +35,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [7049]
-position_solar_y = 268
+time_seconds = [12000, 15500]
+position_solar_y = 260
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -402,8 +402,9 @@ def plot_wl(lines, time):
     ax[2].axvline(lambda_mg, color='k', linestyle='--')
     plt.show()
 
-if __name__ == "__main__":
-    plot_combined_fig()
+# if __name__ == "__main__":
+#     plot_combined_fig()
 
 #plot_wl(lines, 7049)
 
+print(mg_title, si_title, cii_title)
