@@ -21,7 +21,8 @@ position_solar_y = 270
 
 output = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\sji"
 
-
+iris_window = os.path.basename(sji_filepath).replace(r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs", "").replace('iris_l2_20230503_072923_4204700135_SJI_', '').replace('_t000.fits', '')
+print(iris_window)
 hdul = fits.open(sji_filepath)
 hdul.info()
 data = hdul[0].data
@@ -89,7 +90,7 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
     ax.set_xlabel(" ")
     ax.text(0.1, 2, f"{time_labels[i]}", color='white', fontsize= 12)
     ax.text(0.1, 15, f"{position_solar_y}\"", color='white', fontsize=12)
-
+fig.text(0.3, 0.9, f'{iris_window}')
 fig.text(0.48, 0.06,"Solar x (arcsec)")
 fig.text(0.09, 0.48, 'Solar y (arcsec)', rotation=90)
 
