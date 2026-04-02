@@ -7,6 +7,10 @@ from matplotlib.gridspec import GridSpec
 import os
 from datetime import timedelta
 from datetime import datetime as dt
+import matplotlib.patheffects as pe
+import astropy.units as u
+
+from scipy.ndimage import rotate
 
 fs = 20
 
@@ -54,14 +58,17 @@ frames = [data[idx, :, :] for idx in sji_indices]
 frame_idx = sji_indices[0]
 
 vmin = 0
-vmax = np.nanpercentile(np.stack(frames), 99)
-
-n = len(time_seconds)
+vmax = np.nanpercentile(np.stack(frames), 98.8)
 
 
+
+if len(time_seconds) <= 4:
+    rows = 1
+else:
+    rows = 2
 
 fig = plt.figure(figsize=(18, 10))
-gs = GridSpec(2, 4, figure=fig, wspace=0.07, hspace=0.07)
+gs = GridSpec(rows, 4, figure=fig, wspace=0.07, hspace=0.07)
 
 
 
@@ -75,29 +82,61 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
     img = data[idx, :, :]
 
     im = ax.imshow(img, origin='lower', cmap='magma_r', vmin=vmin, vmax=vmax)
+
+    # lines to show pixel
     ax.axhline(y_pix, color='white', linestyle='--', linewidth=2)
     ax.axvline(crpix2 - 9, color='white', linewidth=3)
 
 
+    if rows == 2:
+        fig.text(0.45, 0.95, "Solar x (arcsec)", fontsize=fs)
+        fig.text(0.06, 0.45, 'Solar y (arcsec)', rotation=90, fontsize=fs)
 
-    if i == 0 or i== 4:
-        ax.coords[1].set_ticklabel_visible(True)
-        ax.coords[1].tick_params(axis='y', labelsize=fs)
+        if i == 0 or i== 4:
+            ax.coords[1].set_ticklabel_visible(True)
+            ax.coords[1].tick_params(axis='y', labelsize=fs)
+
+            ax.coords[1].set_ticks(spacing=20 * u.arcsec)
+            ax.coords[1].set_ticks_position('l')
+            ax.coords[1].set_ticklabel_position('l')
+        else:
+            ax.coords[1].set_ticklabel_visible(False)
+            ax.coords[1].set_ticks(spacing=20 * u.arcsec)
+            ax.coords[1].set_ticks_position('l')
+            ax.coords[1].set_ticklabel_position('l')
+        if i < 4:
+            ax.coords[0].set_ticklabel_visible(True)
+            ax.coords[0].tick_params(top=True, labeltop=True, bottom=False, labelbottom=False, axis='x', labelsize=fs)
+            ax.coords[0].set_axislabel(' ')
+        else:
+            ax.coords[0].set_ticklabel_visible(False)
+
     else:
-        ax.coords[1].set_ticklabel_visible(False)
-    if i >= 4:
-        ax.coords[0].set_ticklabel_visible(True)
-        ax.coords[0].tick_params(axis='x', labelsize=fs)
-    else:
-        ax.coords[0].set_ticklabel_visible(False)
+        fig.text(0.45, 0.75, "Solar x (arcsec)", fontsize=fs)
+        fig.text(0.06, 0.4,'Solar y (arcsec)', rotation= 90, fontsize=fs)
+        if i == 0:
+            ax.coords[1].set_ticklabel_visible(True)
+            ax.coords[1].tick_params(axis='y', labelsize=fs)
+            ax.coords[1].set_ticks(spacing=20 * u.arcsec)
+            ax.coords[1].set_ticks_position('l')
+            ax.coords[1].set_ticklabel_position('l')
+        else:
+            ax.coords[1].set_ticklabel_visible(False)
+            ax.coords[1].set_ticks(spacing=20 * u.arcsec)
+            ax.coords[1].set_ticks_position('l')
+            ax.coords[1].set_ticklabel_position('l')
+        if i <= 4:
+            ax.coords[0].tick_params(top=True, labeltop=True, bottom=True, labelbottom=False, axis='x', labelsize=fs)
+            ax.coords[0].set_axislabel(' ')
+        else:
+            ax.coords[0].set_ticklabel_visible(False)
+
 
     ax.set_ylabel(' ')
     ax.set_xlabel(" ")
     ax.text(3, 2, f"{time_labels[i]}", color='k', fontsize= fs)
-    ax.text(3, 16, f"{position_solar_y}\"", color='k', fontsize=fs)
+    ax.text(3.5, 16, f"{position_solar_y}\"", color='k', fontsize=fs)
 
-fig.text(0.45, 0.04,"Solar x (arcsec)", fontsize=fs)
-fig.text(0.06, 0.45, 'Solar y (arcsec)', rotation=90, fontsize=fs)
 
 
 save_paths = os.path.join(output, f"SJI_{time_seconds}_{position_solar_y}.png")
