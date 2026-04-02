@@ -8,7 +8,7 @@ import os
 from datetime import timedelta
 from datetime import datetime as dt
 
-fs = 18
+fs = 20
 
 def time_to_index(time_array, target_time):
     return np.argmin(np.abs(time_array - target_time))

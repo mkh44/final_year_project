@@ -35,8 +35,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11500, 11550, 11575, 11600, 11625, 11650, 11700, 11750]
-position_solar_y = 270
+time_seconds = [6950, 7000, 7050, 7075, 7090, 7100, 7110, 7120]
+position_solar_y = 268
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
