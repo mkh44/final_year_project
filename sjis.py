@@ -74,7 +74,7 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     img = data[idx, :, :]
 
-    im = ax.imshow(img, origin='lower', cmap='magma', vmin=vmin, vmax=vmax)
+    im = ax.imshow(img, origin='lower', cmap='magma_r', vmin=vmin, vmax=vmax)
     ax.axhline(y_pix, color='white', linestyle='--', linewidth=2)
     ax.axvline(crpix2 - 9, color='white', linewidth=3)
 
@@ -93,8 +93,8 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     ax.set_ylabel(' ')
     ax.set_xlabel(" ")
-    ax.text(3, 2, f"{time_labels[i]}", color='white', fontsize= fs)
-    ax.text(3, 16, f"{position_solar_y}\"", color='white', fontsize=fs)
+    ax.text(3, 2, f"{time_labels[i]}", color='k', fontsize= fs)
+    ax.text(3, 16, f"{position_solar_y}\"", color='k', fontsize=fs)
 
 fig.text(0.45, 0.04,"Solar x (arcsec)", fontsize=fs)
 fig.text(0.06, 0.45, 'Solar y (arcsec)', rotation=90, fontsize=fs)
