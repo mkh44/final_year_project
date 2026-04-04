@@ -35,8 +35,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11500, 11600, 11700, 11750]
-position_solar_y = 275
+time_seconds = [11800, 11900, 12000]
+position_solar_y = 253
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -45,6 +45,7 @@ position_solar_y = 275
 
 z = 10
 x_lim = 450
+
 zoom = 50
 fs = 22 # font size
 
@@ -334,69 +335,167 @@ mg_t_array = np.arange(mg_q_int_map.data.shape[1]) * cadence
 mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
             np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
 
-def plot_wl(lines, time):
-    # Plotting wavelength
-    clock_time = start_time + timedelta(seconds=time)
-    time_label = clock_time.strftime('%H:%M:%S')
 
-    si_data_arr = get_data_arr(0)
-    cii_data_arr = get_data_arr(1)
-    mg_data_arr = get_data_arr(2)
+def plot_wavelength_with_velocity(time_seconds, v_lim):
+    fig = plt.figure(figsize=(20, 14))
+    fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+    fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
+    gs = gridspec.GridSpec(3, n, figure=fig, hspace=0.22, wspace=0.05)
+    plt.subplots_adjust(top=0.92)
 
-    t_idx = time_to_index(time_array, time)
-
-    pos_idx = np.argmin(np.abs(si_slit_pos - position_solar_y))
-    max_intensity = max(si_data_arr[t_idx, pos_idx].max(), cii_data_arr[t_idx, pos_idx].max(), mg_data_arr[t_idx, pos_idx].max())
-
-    si_intensity = si_data_arr[t_idx, pos_idx]
-    si_intensity_norm = si_intensity / max_intensity
-
-    cii_intensity = cii_data_arr[t_idx, pos_idx]
-    cii_intensity_norm = cii_intensity / max_intensity
-
-    mg_intensity = mg_data_arr[t_idx, pos_idx]
-    mg_intensity_norm = mg_intensity / max_intensity
+    line_info = [
+        ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
+        ('C II', 1, cii_q_int_map, cii_t_array, cii_slit_pos, 1335.7),
+        ('Mg II', 2, mg_q_int_map, mg_t_array, mg_slit_pos, 2795.5)
+    ]
 
 
-    fig, ax = plt.subplots(3, 1)
-    ax[0].plot(si_wavelength, si_intensity_norm, color='#8c0010')
-    ax[0].set_xlabel(' ')
-    ax[0].set_ylim(0, 1.1)
-    ax0 = ax[0].twinx()
-    ax0.set_yticks([])
-    ax0.set_yticklabels([])
-    ax0.set_ylabel(f'{si_title}')
-    ax[0].xaxis.set_minor_locator(MultipleLocator(10))
-    ax[0].axvline(lambda_si, color='k', linestyle='--')
-    ax[0].set_xlim(lambda_si - 3, lambda_si + 3)
-    plt.title(f'{time_label}, {position_solar_y}\"', loc='right')
+    for i, (title, line_idx, q_map, t_arr, slit_pos, rest_wave) in enumerate(line_info):
+        data = get_data_arr(line_idx)
+        header = hdul[lines[line_idx]].header
+        wavelength = get_wavelength(header, line_idx)
 
-    ax[1].plot(cii_wavelength, cii_intensity_norm, color='#8c0010')
-    ax[1].set_xlabel(' ')
-    ax[1].set_ylabel("Intensity")
-    ax[1].set_ylim(0, 1.1)
-    ax1 = ax[1].twinx()
-    ax1.set_yticks([])
-    ax1.set_yticklabels([])
-    ax1.set_ylabel(f'{cii_title}')
-    ax[1].axvline(lambda_cii, color='k', linestyle='--')
-    ax[1].set_xlim(lambda_cii - 3, lambda_cii + 3)
-    ax[1].xaxis.set_minor_locator(MultipleLocator(10))
+        v_dopp, profiles = get_line_profiles(line_idx, rest_wave)
 
-    ax[2].plot(mg_wavelength, mg_intensity_norm, color='#8c0010')
-    ax[2].set_ylabel(' ')
-    ax[2].set_xlabel('Wavelength (Å)')
-    ax[2].set_ylim(0, 1.1)
-    ax2 = ax[2].twinx()
-    ax2.set_yticks([])
-    ax2.set_yticklabels([])
-    ax2.set_ylabel(f'{mg_title}')
-    ax[2].xaxis.set_minor_locator(MultipleLocator(10))
-    ax[2].set_xlim((lambda_mg - z), lambda_mg + z)
-    ax[2].axvline(lambda_mg, color='k', linestyle='--')
+        # Time indices
+        t_indices = [time_to_index(time_array, t) for t in time_seconds]
+
+        pos_idx = np.argmin(np.abs(slit_pos - position_solar_y))
+        max_intensity = data[t_indices, pos_idx].max()
+
+
+        for j, t_idx in enumerate(t_indices):
+            ax = fig.add_subplot(gs[i, j])
+
+            intensity = data[t_idx, pos_idx]
+            intensity_norm = intensity / max_intensity
+
+            red = v_dopp >= 0
+            blue = v_dopp < 0
+
+            #ax.plot(v_dopp, intensity_norm, color='k')
+            ax.plot(v_dopp[red], intensity_norm[red], color='red')
+            ax.plot(v_dopp[blue], intensity_norm[blue], color='blue')
+
+
+            ax.axvline(0, linestyle='--', color='k', linewidth=1)
+            ax.set_xlim(-x_lim, x_lim)
+            ax.set_ylim(0, 1.1)
+
+
+
+
+            axw = ax.twiny()
+            axw.plot(wavelength, intensity_norm, color='k')
+            axw.tick_params(axis='x', labelcolor='k')
+            axw.tick_params(top=False, bottom=True, labeltop=False, labelbottom=True)
+
+            if title == 'Mg II':
+                axw.set_xlim((rest_wave - 4), rest_wave + 4)
+            else:
+                axw.set_xlim((rest_wave - 2), rest_wave + 2)
+
+            if j == 0 and i == 1:
+                ax.set_ylabel('Intensity', fontsize=fs - 3)
+                ax.tick_params(labelsize=fs - 5)
+            else:
+                ax.set_yticklabels([' '])
+
+            if i == 2:
+                ax.text(
+                    0.05, 0.95, f"{time_labels[t_idx]}",
+                    transform=ax.transAxes,
+                    ha='left', va='top',
+                    fontsize=fs - 3)
+            else:
+                ax.text(
+                    0.98, 0.95, f"{time_labels[t_idx]}",
+                    transform=ax.transAxes,
+                    ha='right', va='top',
+                    fontsize=fs - 3)
+
+            ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
+
+            if i == 0:
+                ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+                ax.tick_params(labelsize=fs - 5)
+
+            else:
+                ax.set_xticklabels([' '])
+                ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
+
+            # Twin axis for line names on right
+            if j == n - 1:
+                ax2 = ax.twinx()
+                ax2.set_ylabel(f"{title}", fontsize=fs - 4)
+                ax2.set_yticks([])
+
+
+    fig.align_ylabels()
     plt.show()
 
-if __name__ == "__main__":
-    plot_combined_fig()
+    # for time in times:
+    # clock_time = start_time + timedelta(seconds=time)
+    # time_label = clock_time.strftime('%H:%M:%S')
+    #
+    # si_data_arr = get_data_arr(0)
+    # cii_data_arr = get_data_arr(1)
+    # mg_data_arr = get_data_arr(2)
+    #
+    # t_idx = time_to_index(time_array, time)
+    #
+    # pos_idx = np.argmin(np.abs(si_slit_pos - position_solar_y))
+    # max_intensity = max(si_data_arr[t_idx, pos_idx].max(), cii_data_arr[t_idx, pos_idx].max(), mg_data_arr[t_idx, pos_idx].max())
+    #
+    # si_intensity = si_data_arr[t_idx, pos_idx]
+    # si_intensity_norm = si_intensity / max_intensity
+    #
+    # cii_intensity = cii_data_arr[t_idx, pos_idx]
+    # cii_intensity_norm = cii_intensity / max_intensity
+    #
+    # mg_intensity = mg_data_arr[t_idx, pos_idx]
+    # mg_intensity_norm = mg_intensity / max_intensity
+    #
+    #
+    # fig, ax = plt.subplots(3, 1)
+    # ax[0].plot(si_wavelength, si_intensity_norm, color='#8c0010')
+    # ax[0].set_xlabel(' ')
+    # ax[0].set_ylim(0, 1.1)
+    # ax0 = ax[0].twinx()
+    # ax0.set_yticks([])
+    # ax0.set_yticklabels([])
+    # ax0.set_ylabel(f'{si_title}')
+    # ax[0].xaxis.set_minor_locator(MultipleLocator(10))
+    # ax[0].axvline(lambda_si, color='k', linestyle='--')
+    # ax[0].set_xlim(lambda_si - 3, lambda_si + 3)
+    # plt.title(f'{time_label}, {position_solar_y}\"', loc='right')
+    #
+    # ax[1].plot(cii_wavelength, cii_intensity_norm, color='#8c0010')
+    # ax[1].set_xlabel(' ')
+    # ax[1].set_ylabel("Intensity")
+    # ax[1].set_ylim(0, 1.1)
+    # ax1 = ax[1].twinx()
+    # ax1.set_yticks([])
+    # ax1.set_yticklabels([])
+    # ax1.set_ylabel(f'{cii_title}')
+    # ax[1].axvline(lambda_cii, color='k', linestyle='--')
+    # ax[1].set_xlim(lambda_cii - 3, lambda_cii + 3)
+    # ax[1].xaxis.set_minor_locator(MultipleLocator(10))
+    #
+    # ax[2].plot(mg_wavelength, mg_intensity_norm, color='#8c0010')
+    # ax[2].set_ylabel(' ')
+    # ax[2].set_xlabel('Wavelength (Å)')
+    # ax[2].set_ylim(0, 1.1)
+    # ax2 = ax[2].twinx()
+    # ax2.set_yticks([])
+    # ax2.set_yticklabels([])
+    # ax2.set_ylabel(f'{mg_title}')
+    # ax[2].xaxis.set_minor_locator(MultipleLocator(10))
+    # ax[2].set_xlim((lambda_mg - z), lambda_mg + z)
+    # ax[2].axvline(lambda_mg, color='k', linestyle='--')
+    # plt.show()
 
-#plot_wl(lines, [11500, 11550, 11575, 11600, 11625, 11650, 11700, 11750])
+# if __name__ == "__main__":
+#     plot_combined_fig()
+
+plot_wavelength_with_velocity(time_seconds, 200)
