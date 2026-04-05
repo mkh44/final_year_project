@@ -336,12 +336,14 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
             np.arange(mg_q_int_map.data.shape[0]) - mg_q_int_map.meta['crpix2'])
 
 
-def plot_wavelength_with_velocity(time_seconds, v_lim):
-    fig = plt.figure(figsize=(20, 14))
-    fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+def plot_wavelength_with_velocity(time_seconds):
+    fig = plt.figure(figsize=(16, 12))
+    #fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs, color='#8c0010')
     fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
+    # fig.text(0.48, 0.05, 'Wavelength (Å)', fontsize=fs, color='blue')
     gs = gridspec.GridSpec(3, n, figure=fig, hspace=0.22, wspace=0.05)
     plt.subplots_adjust(top=0.92)
+
 
     line_info = [
         ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
@@ -349,7 +351,12 @@ def plot_wavelength_with_velocity(time_seconds, v_lim):
         ('Mg II', 2, mg_q_int_map, mg_t_array, mg_slit_pos, 2795.5)
     ]
 
+    # Handles for legend
+    dopp_handle=None
+    wl_handle=None
+    restwl_handle=None
 
+    # For each time in timeseconds
     for i, (title, line_idx, q_map, t_arr, slit_pos, rest_wave) in enumerate(line_info):
         data = get_data_arr(line_idx)
         header = hdul[lines[line_idx]].header
@@ -373,52 +380,75 @@ def plot_wavelength_with_velocity(time_seconds, v_lim):
             red = v_dopp >= 0
             blue = v_dopp < 0
 
-            #ax.plot(v_dopp, intensity_norm, color='k')
-            ax.plot(v_dopp[red], intensity_norm[red], color='red')
-            ax.plot(v_dopp[blue], intensity_norm[blue], color='blue')
+            # Doppler velocity plots
+            dopp_line, = ax.plot(
+                v_dopp, intensity_norm,
+                color='red',
+                linestyle='dashdot',
+                linewidth=3,
+                label='Doppler Velocity (km/s)')
+            # ax.plot(v_dopp[red], intensity_norm[red], color='red', lw=3)
+            # ax.plot(v_dopp[blue], intensity_norm[blue], color='blue', lw=3)
 
-
+            # Central line for Dopp vel
             ax.axvline(0, linestyle='--', color='k', linewidth=1)
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
 
-
-
-
+            # Twin axis for wavelengths
             axw = ax.twiny()
-            axw.plot(wavelength, intensity_norm, color='k')
-            axw.tick_params(axis='x', labelcolor='k')
+            wl_line, = axw.plot(
+                wavelength, intensity_norm,
+                color='blue',
+                label='Wavelength (Å)')
+            axw.tick_params(axis='x', labelcolor='blue', labelsize = fs-3)
             axw.tick_params(top=False, bottom=True, labeltop=False, labelbottom=True)
 
+            # Central line for rest wavelength (NTS: should match the dopp vel line exactly)
+            rest_wl_line = axw.axvline(
+                rest_wave,
+                linestyle='--',
+                color='k',
+                linewidth=1,
+                label='Rest Wavelength/Zero Doppler shift')
+
+            # Axis limits for wavelength
             if title == 'Mg II':
                 axw.set_xlim((rest_wave - 4), rest_wave + 4)
             else:
                 axw.set_xlim((rest_wave - 2), rest_wave + 2)
 
+            # Y axis title
             if j == 0 and i == 1:
-                ax.set_ylabel('Intensity', fontsize=fs - 3)
+                ax.set_ylabel('Intensity', fontsize=fs)
                 ax.tick_params(labelsize=fs - 5)
-            else:
+            elif j != 0:
                 ax.set_yticklabels([' '])
+            elif j == 0:
+                ax.tick_params(labelsize=fs - 5)
 
-            if i == 2:
-                ax.text(
-                    0.05, 0.95, f"{time_labels[t_idx]}",
-                    transform=ax.transAxes,
-                    ha='left', va='top',
-                    fontsize=fs - 3)
-            else:
-                ax.text(
-                    0.98, 0.95, f"{time_labels[t_idx]}",
-                    transform=ax.transAxes,
-                    ha='right', va='top',
-                    fontsize=fs - 3)
-
+            # Y axis tick spacing
             ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
 
+            # Time stamps
+            ax.text(
+                0.05, 0.95, f"{time_labels[t_idx]}",
+                transform=ax.transAxes,
+                ha='left', va='top',
+                fontsize=fs - 3)
+
+            #Wl axis label
+            if i == 3 and j == 1:
+                ax.set_xlabel('Wavelength (Å)', fontsize=fs, color='blue')
+
+            # Dopp axis label
+            if i == 0 and j ==1:
+                ax.set_xlabel('Doppler Velocity (km/s)', fontsize=fs, color='#8c0010')
+
+            # Dopp tick labels
             if i == 0:
                 ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
-                ax.tick_params(labelsize=fs - 5)
+                ax.tick_params(axis='x', labelsize=fs - 5, labelcolor='#8c0010')
 
             else:
                 ax.set_xticklabels([' '])
@@ -427,75 +457,28 @@ def plot_wavelength_with_velocity(time_seconds, v_lim):
             # Twin axis for line names on right
             if j == n - 1:
                 ax2 = ax.twinx()
-                ax2.set_ylabel(f"{title}", fontsize=fs - 4)
+                ax2.set_ylabel(f"{title}", fontsize=fs)
                 ax2.set_yticks([])
 
+            # Final legend handles
+            if dopp_handle is None:
+                dopp_handle = dopp_line
+            if wl_handle is None:
+                wl_handle = wl_line
+            if restwl_handle is None:
+                restwl_handle = rest_wl_line
 
     fig.align_ylabels()
+    fig.legend(handles=[dopp_handle, wl_handle, restwl_handle],
+               loc='upper right',
+               bbox_to_anchor=(0.85, 0.92),
+               ncols=1,
+               fontsize=fs-3)
+    plt.tight_layout()
     plt.show()
 
-    # for time in times:
-    # clock_time = start_time + timedelta(seconds=time)
-    # time_label = clock_time.strftime('%H:%M:%S')
-    #
-    # si_data_arr = get_data_arr(0)
-    # cii_data_arr = get_data_arr(1)
-    # mg_data_arr = get_data_arr(2)
-    #
-    # t_idx = time_to_index(time_array, time)
-    #
-    # pos_idx = np.argmin(np.abs(si_slit_pos - position_solar_y))
-    # max_intensity = max(si_data_arr[t_idx, pos_idx].max(), cii_data_arr[t_idx, pos_idx].max(), mg_data_arr[t_idx, pos_idx].max())
-    #
-    # si_intensity = si_data_arr[t_idx, pos_idx]
-    # si_intensity_norm = si_intensity / max_intensity
-    #
-    # cii_intensity = cii_data_arr[t_idx, pos_idx]
-    # cii_intensity_norm = cii_intensity / max_intensity
-    #
-    # mg_intensity = mg_data_arr[t_idx, pos_idx]
-    # mg_intensity_norm = mg_intensity / max_intensity
-    #
-    #
-    # fig, ax = plt.subplots(3, 1)
-    # ax[0].plot(si_wavelength, si_intensity_norm, color='#8c0010')
-    # ax[0].set_xlabel(' ')
-    # ax[0].set_ylim(0, 1.1)
-    # ax0 = ax[0].twinx()
-    # ax0.set_yticks([])
-    # ax0.set_yticklabels([])
-    # ax0.set_ylabel(f'{si_title}')
-    # ax[0].xaxis.set_minor_locator(MultipleLocator(10))
-    # ax[0].axvline(lambda_si, color='k', linestyle='--')
-    # ax[0].set_xlim(lambda_si - 3, lambda_si + 3)
-    # plt.title(f'{time_label}, {position_solar_y}\"', loc='right')
-    #
-    # ax[1].plot(cii_wavelength, cii_intensity_norm, color='#8c0010')
-    # ax[1].set_xlabel(' ')
-    # ax[1].set_ylabel("Intensity")
-    # ax[1].set_ylim(0, 1.1)
-    # ax1 = ax[1].twinx()
-    # ax1.set_yticks([])
-    # ax1.set_yticklabels([])
-    # ax1.set_ylabel(f'{cii_title}')
-    # ax[1].axvline(lambda_cii, color='k', linestyle='--')
-    # ax[1].set_xlim(lambda_cii - 3, lambda_cii + 3)
-    # ax[1].xaxis.set_minor_locator(MultipleLocator(10))
-    #
-    # ax[2].plot(mg_wavelength, mg_intensity_norm, color='#8c0010')
-    # ax[2].set_ylabel(' ')
-    # ax[2].set_xlabel('Wavelength (Å)')
-    # ax[2].set_ylim(0, 1.1)
-    # ax2 = ax[2].twinx()
-    # ax2.set_yticks([])
-    # ax2.set_yticklabels([])
-    # ax2.set_ylabel(f'{mg_title}')
-    # ax[2].xaxis.set_minor_locator(MultipleLocator(10))
-    # ax[2].set_xlim((lambda_mg - z), lambda_mg + z)
-    # ax[2].axvline(lambda_mg, color='k', linestyle='--')
-    # plt.show()
 
 # if __name__ == "__main__":
 #     plot_combined_fig()
 
-plot_wavelength_with_velocity(time_seconds, 200)
+plot_wavelength_with_velocity(time_seconds)
