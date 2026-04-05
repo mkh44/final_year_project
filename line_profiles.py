@@ -35,7 +35,7 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [12000]
+time_seconds = [11900]
 position_solar_y = 253
 
 # [6900, 6950, 7000, 7050]
@@ -414,7 +414,7 @@ def plot_wavelength_with_velocity(time_seconds):
 
             # Axis limits for wavelength
             if title == 'Mg II':
-                axw.set_xlim((rest_wave - 4), rest_wave + 4)
+                axw.set_xlim((rest_wave - 4.3), rest_wave + 4.3)
             else:
                 axw.set_xlim((rest_wave - 2), rest_wave + 2)
 
@@ -489,6 +489,8 @@ def plot_wavelength_with_velocity(time_seconds):
     #     fontsize=fs - 3
     # )
     plt.tight_layout()
+    save_path = os.path.join(output_loc, f"dopp_vs_wl_{time_seconds}_{position_solar_y}.png")
+    plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
 
