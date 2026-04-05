@@ -35,7 +35,7 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11800, 11900, 12000]
+time_seconds = [12000]
 position_solar_y = 253
 
 # [6900, 6950, 7000, 7050]
@@ -339,7 +339,7 @@ mg_slit_pos = mg_q_int_map.meta['crval2'] + mg_q_int_map.meta['cdelt2'] * (
 def plot_wavelength_with_velocity(time_seconds):
     fig = plt.figure(figsize=(16, 12))
     #fig.text(0.5, 0.96, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs, color='#8c0010')
-    fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
+    fig.text(0.15, 0.06, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
     # fig.text(0.48, 0.05, 'Wavelength (Å)', fontsize=fs, color='blue')
     gs = gridspec.GridSpec(3, n, figure=fig, hspace=0.22, wspace=0.05)
     plt.subplots_adjust(top=0.92)
@@ -391,7 +391,7 @@ def plot_wavelength_with_velocity(time_seconds):
             # ax.plot(v_dopp[blue], intensity_norm[blue], color='blue', lw=3)
 
             # Central line for Dopp vel
-            ax.axvline(0, linestyle='--', color='k', linewidth=1)
+            ax.axvline(0, linestyle='--', color='k', linewidth=1.5)
             ax.set_xlim(-x_lim, x_lim)
             ax.set_ylim(0, 1.1)
 
@@ -409,7 +409,7 @@ def plot_wavelength_with_velocity(time_seconds):
                 rest_wave,
                 linestyle='--',
                 color='k',
-                linewidth=1,
+                linewidth=1.5,
                 label='Rest Wavelength/Zero Doppler shift')
 
             # Axis limits for wavelength
@@ -438,11 +438,13 @@ def plot_wavelength_with_velocity(time_seconds):
                 fontsize=fs - 3)
 
             #Wl axis label
-            if i == 3 and j == 1:
-                ax.set_xlabel('Wavelength (Å)', fontsize=fs, color='blue')
+            if i == 2 and j == 0:
+                axw.xaxis.set_label_position('bottom')
+                axw.set_xlabel('Wavelength (Å)', fontsize=fs, color='blue')
 
             # Dopp axis label
-            if i == 0 and j ==1:
+            if i == 0 and j == 0:
+                ax.xaxis.set_label_position('top')
                 ax.set_xlabel('Doppler Velocity (km/s)', fontsize=fs, color='#8c0010')
 
             # Dopp tick labels
@@ -460,20 +462,32 @@ def plot_wavelength_with_velocity(time_seconds):
                 ax2.set_ylabel(f"{title}", fontsize=fs)
                 ax2.set_yticks([])
 
+            # Legend
+            if i == 0 and j == n -1:
+                ax.legend(
+                    handles=[dopp_line, wl_line, rest_wl_line],
+                    loc='upper right',
+                    fontsize=fs - 5,
+                    frameon=False
+                )
             # Final legend handles
-            if dopp_handle is None:
-                dopp_handle = dopp_line
-            if wl_handle is None:
-                wl_handle = wl_line
-            if restwl_handle is None:
-                restwl_handle = rest_wl_line
+            # if dopp_handle is None:
+            #     dopp_handle = dopp_line
+            # if wl_handle is None:
+            #     wl_handle = wl_line
+            # if restwl_handle is None:
+            #     restwl_handle = rest_wl_line
 
     fig.align_ylabels()
-    fig.legend(handles=[dopp_handle, wl_handle, restwl_handle],
-               loc='upper right',
-               bbox_to_anchor=(0.85, 0.92),
-               ncols=1,
-               fontsize=fs-3)
+
+    # Legend
+
+    # fig.legend(
+    #     handles=[dopp_handle, wl_handle, restwl_handle],
+    #     loc='upper center',
+    #     ncols=1,
+    #     fontsize=fs - 3
+    # )
     plt.tight_layout()
     plt.show()
 
