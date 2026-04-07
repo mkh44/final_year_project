@@ -19,8 +19,8 @@ def time_to_index(time_array, target_time):
 
 sji_filepath = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\iris_l2_20230503_072923_4204700135_SJI_2796_t000.fits"
 
-time_seconds = [7050, 7090, 7110]
-position_solar_y = 268
+time_seconds = [11800, 11900, 12000]
+position_solar_y = 253
 
 
 output = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\sji"
@@ -70,6 +70,7 @@ else:
 fig = plt.figure(figsize=(18, 10))
 gs = GridSpec(rows, 4, figure=fig, wspace=0.07, hspace=0.07)
 
+cmap = 'magma_r'
 
 
 for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
@@ -81,7 +82,7 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     img = data[idx, :, :]
 
-    im = ax.imshow(img, origin='lower', cmap='magma_r', vmin=vmin, vmax=vmax)
+    im = ax.imshow(img, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
 
     # lines to show pixel
     ax.axhline(y_pix, color='white', linestyle='--', linewidth=2)
@@ -134,8 +135,13 @@ for i, (t, idx) in enumerate(zip(time_seconds, sji_indices)):
 
     ax.set_ylabel(' ')
     ax.set_xlabel(" ")
-    ax.text(3, 2, f"{time_labels[i]}", color='k', fontsize= fs)
-    ax.text(3.5, 16, f"{position_solar_y}\"", color='k', fontsize=fs)
+
+    if cmap == 'magma':
+        ax.text(3, 2, f"{time_labels[i]}", color='white', fontsize= fs)
+        ax.text(3.5, 16, f"{position_solar_y}\"", color='white', fontsize=fs)
+    elif cmap == 'magma_r':
+        ax.text(3, 2, f"{time_labels[i]}", color='k', fontsize=fs)
+        ax.text(3.5, 16, f"{position_solar_y}\"", color='k', fontsize=fs)
 
 
 
