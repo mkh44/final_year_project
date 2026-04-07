@@ -19,7 +19,7 @@ def time_to_index(time_array, target_time):
 
 sji_filepath = r"C:\Users\molly\OneDrive\OneDrive - Dublin City University personal\PHA4\Final_Year_Project\outputs\iris_l2_20230503_072923_4204700135_SJI_2796_t000.fits"
 
-time_seconds = [11000, 12000]
+time_seconds = [7050, 7090, 7110]
 position_solar_y = 268
 
 

@@ -35,8 +35,8 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11900]
-position_solar_y = 253
+time_seconds = [6970, 7000, 7050]
+position_solar_y = 260
 
 # [6900, 6950, 7000, 7050]
 # [9600, 9700, 9750, 9800]
@@ -493,8 +493,116 @@ def plot_wavelength_with_velocity(time_seconds):
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
+def plot_dopp():
+    fig = plt.figure(figsize=(20,14))
+    # fig.text(0.5, 0.06, 'Doppler Velocity (km/s)', ha='center', va='center', fontsize=fs)
+    # fig.text(0.15, 0.96, f'{position_solar_y} arcsec', ha='center', va='center', fontsize=fs)
+    gs = gridspec.GridSpec(3, n, figure=fig,
+    hspace=0.22, wspace=0.05)
+    plt.subplots_adjust(top=0.92)
+
+    line_info = [
+        ('Si IV', 0, si_q_int_map, si_t_array, si_slit_pos, 1402.8),
+        ('C II', 1, cii_q_int_map, cii_t_array, cii_slit_pos, 1335.7),
+        ('Mg II', 2, mg_q_int_map, mg_t_array, mg_slit_pos, 2795.5)
+    ]
+
+
+    for i, (title, line_idx, q_map, t_arr, slit_pos, rest_wave) in enumerate(line_info):
+        data = get_data_arr(line_idx)
+        header = hdul[lines[line_idx]].header
+        wavelength = get_wavelength(header, line_idx)
+
+        v_dopp, profiles = get_line_profiles(line_idx, rest_wave)
+
+
+        # Time indices
+        t_indices = [time_to_index(time_array, t) for t in time_seconds]
+
+        pos_idx = np.argmin(np.abs(slit_pos - position_solar_y))
+        max_intensity = data[t_indices, pos_idx].max()
+
+    # TOP ROW
+        for j, t_idx in enumerate(t_indices):
+            ax = fig.add_subplot(gs[i, j])
+
+            intensity = data[t_idx, pos_idx]
+            intensity_norm = intensity / max_intensity
+
+            red = v_dopp >= 0
+            blue = v_dopp < 0
+
+            ax.plot(v_dopp, intensity_norm, color='k')
+            ax.plot(v_dopp[red], intensity_norm[red], color='red')
+            ax.plot(v_dopp[blue], intensity_norm[blue], color='blue')
+
+            ax.axvline(0, linestyle='--', color='k', linewidth=1)
+            ax.set_xlim(-x_lim, x_lim)
+            ax.set_ylim(0, 1.1)
+
+            if j == 1 and i ==2:
+                ax.set_xlabel('Doppler Velocity (km/s)', fontsize=fs)
+
+            if i == 2:
+                ax.tick_params(top=False, labeltop=False, bottom=True, labelbottom=True)
+                ax.tick_params(labelsize=fs - 5)
+            else:
+                ax.tick_params(top=False, labeltop=False, bottom=True, labelbottom=False)
+
+            if j == 0 and i ==1:
+                ax.set_ylabel('Intensity', fontsize=fs-3)
+
+            if j ==0:
+               ax.tick_params(labelsize=fs-5)
+            else:
+               ax.set_yticklabels(' ')
+
+            if i ==2:
+                ax.text(
+                0.05, 0.95, f"{time_labels[t_idx]}",
+                transform=ax.transAxes,
+                ha='left', va='top',
+                fontsize=fs - 3)
+
+                ax.text(0.85, 0.95, f"{position_solar_y}",
+                        transform=ax.transAxes,
+                ha='left', va='top',
+                fontsize=fs - 3)
+
+            else:
+                ax.text(
+                    0.98, 0.95, f"{time_labels[t_idx]}",
+                    transform=ax.transAxes,
+                    ha='right', va='top',
+                    fontsize=fs - 3)
+                ax.text(0.05, 0.95, f"{position_solar_y}", transform=ax.transAxes,
+                ha='left', va='top',
+                fontsize=fs - 3)
+
+            ax.yaxis.set_major_locator(FixedLocator([0.0, 0.50, 1.0]))
+
+
+
+
+        # else:
+        #         ax.set_xticklabels([' '])
+        #         ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
+
+        # Twin axis for line names on right
+            if j == n-1:
+                ax2 = ax.twinx()
+                ax2.set_ylabel(f"{title}", fontsize=fs-4)
+                ax2.set_yticks([])
+
+
+    fig.align_ylabels()
+    save_path = os.path.join(output_loc, f"dopp_profile_{time_seconds}_{position_solar_y}.png")
+    plt.savefig(save_path, bbox_inches="tight")
+    plt.show()
+
+plot_dopp()
 
 # if __name__ == "__main__":
 #     plot_combined_fig()
 
-plot_wavelength_with_velocity(time_seconds)
+#plot_wavelength_with_velocity(time_seconds)
