@@ -35,7 +35,7 @@ fits_file = glob.glob(os.path.join(input_loc, "iris_l2_20230503_072923_420470013
 
 
 lines = [5, 1, 9]
-time_seconds = [11800, 11900, 12000]
+time_seconds = [11900]
 position_solar_y = 253
 
 # [6900, 6950, 7000, 7050]
@@ -381,19 +381,19 @@ def plot_wavelength_with_velocity(time_seconds):
             blue = v_dopp < 0
 
             # Doppler velocity plots
-            dopp_line, = ax.plot(
-                v_dopp, intensity_norm,
-                color='red',
-                linestyle='dashdot',
-                linewidth=3,
-                label='Doppler Velocity (km/s)')
+            # dopp_line, = ax.plot(
+            #     v_dopp, intensity_norm,
+            #     color='red',
+            #     linestyle='dashdot',
+            #     linewidth=3,
+            #     label='Doppler Velocity (km/s)')
             # ax.plot(v_dopp[red], intensity_norm[red], color='red', lw=3)
             # ax.plot(v_dopp[blue], intensity_norm[blue], color='blue', lw=3)
 
-            # Central line for Dopp vel
-            ax.axvline(0, linestyle='--', color='k', linewidth=1.5)
-            ax.set_xlim(-x_lim, x_lim)
-            ax.set_ylim(0, 1.1)
+            # # Central line for Dopp vel
+            # ax.axvline(0, linestyle='--', color='k', linewidth=1.5)
+            # ax.set_xlim(-x_lim, x_lim)
+            # ax.set_ylim(0, 1.1)
 
             # Twin axis for wavelengths
             axw = ax.twiny()
@@ -401,7 +401,7 @@ def plot_wavelength_with_velocity(time_seconds):
                 wavelength, intensity_norm,
                 color='blue',
                 label='Wavelength (Å)')
-            axw.tick_params(axis='x', labelcolor='blue', labelsize = fs-3)
+            axw.tick_params(axis='x', labelcolor='k', labelsize = fs-3)
             axw.tick_params(top=False, bottom=True, labeltop=False, labelbottom=True)
 
             # Central line for rest wavelength (NTS: should match the dopp vel line exactly)
@@ -410,13 +410,15 @@ def plot_wavelength_with_velocity(time_seconds):
                 linestyle='--',
                 color='k',
                 linewidth=1.5,
-                label='Rest Wavelength/Zero Doppler shift')
+                label='Rest Wavelength')
 
             # Axis limits for wavelength
             if title == 'Mg II':
                 axw.set_xlim((rest_wave - 4.3), rest_wave + 4.3)
             else:
                 axw.set_xlim((rest_wave - 2), rest_wave + 2)
+
+            axw.set_ylim(0, 1.1)
 
             # Y axis title
             if j == 0 and i == 1:
@@ -440,21 +442,21 @@ def plot_wavelength_with_velocity(time_seconds):
             #Wl axis label
             if i == 2 and j == 0:
                 axw.xaxis.set_label_position('bottom')
-                axw.set_xlabel('Wavelength (Å)', fontsize=fs, color='blue')
+                axw.set_xlabel('Wavelength (Å)', fontsize=fs, color='k')
 
             # Dopp axis label
-            if i == 0 and j == 0:
-                ax.xaxis.set_label_position('top')
-                ax.set_xlabel('Doppler Velocity (km/s)', fontsize=fs, color='#8c0010')
+            # if i == 0 and j == 0:
+            #     ax.xaxis.set_label_position('top')
+            #     ax.set_xlabel('Doppler Velocity (km/s)', fontsize=fs, color='#8c0010')
 
-            # Dopp tick labels
-            if i == 0:
-                ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
-                ax.tick_params(axis='x', labelsize=fs - 5, labelcolor='#8c0010')
-
-            else:
-                ax.set_xticklabels([' '])
-                ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
+            # # Dopp tick labels
+            # if i == 0:
+            #     ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+            #     ax.tick_params(axis='x', labelsize=fs - 5, labelcolor='#8c0010')
+            #
+            # else:
+            #     ax.set_xticklabels([' '])
+            #     ax.tick_params(top=True, labeltop=False, bottom=False, labelbottom=False)
 
             # Twin axis for line names on right
             if j == n - 1:
@@ -465,7 +467,7 @@ def plot_wavelength_with_velocity(time_seconds):
             # Legend
             if i == 0 and j == n -1:
                 ax.legend(
-                    handles=[dopp_line, wl_line, rest_wl_line],
+                    handles=[wl_line, rest_wl_line],
                     loc='upper right',
                     fontsize=fs - 5,
                     frameon=False
@@ -600,9 +602,9 @@ def plot_dopp():
     plt.savefig(save_path, bbox_inches="tight")
     plt.show()
 
-plot_dopp()
+#plot_dopp()
 
 # if __name__ == "__main__":
 #     plot_combined_fig()
 
-#plot_wavelength_with_velocity(time_seconds)
+plot_wavelength_with_velocity(time_seconds)
